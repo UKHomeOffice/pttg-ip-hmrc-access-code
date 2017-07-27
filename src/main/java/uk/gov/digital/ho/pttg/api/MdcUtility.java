@@ -9,8 +9,8 @@ import java.util.UUID;
 @Component
 public class MdcUtility {
 
-    public static final String USER_ID_HEADER = "userId";
-    public static final String CORRELATION_ID_HEADER = "correlationId";
+    public static final String USER_ID_HEADER = "x-auth-userid";
+    public static final String CORRELATION_ID_HEADER = "x-correlation-id";
 
     @CheckReturnValue(when = When.NEVER)
     public String generateDefaultUserId() {
