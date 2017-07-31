@@ -27,7 +27,7 @@ public class AccessCodeResource {
 
         AccessCode accessCode = accessCodeGenerator.getAccessCode(LocalDateTime.now());
 
-        log.info("getCurrentAccessCode returning {}", accessCode);
+        log.info("getCurrentAccessCode returning accessCode");
 
         return ResponseEntity.ok(accessCode);
     }
