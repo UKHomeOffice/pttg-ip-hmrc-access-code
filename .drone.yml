@@ -105,6 +105,7 @@ pipeline:
       - DOCKER_HOST=tcp://127.0.0.1:2375
       - KUBE_NAMESPACE=pt-i-prod
       - ENVIRONMENT=prod
+      - KUBE_TOKEN=${PROD_KUBE_TOKEN}
       - VERSION=${IMAGE_VERSION}
       - KUBE_SERVER=https://kube.dsp.digital.homeoffice.gov.uk
     commands:
