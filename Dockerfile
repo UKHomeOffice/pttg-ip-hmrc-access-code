@@ -1,4 +1,4 @@
-FROM quay.io/ukhomeofficedigital/openjdk8:v1.1.0
+FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.131
 
 
 ENV USER pttg
@@ -6,7 +6,10 @@ ENV GROUP pttg
 ENV NAME pttg-ip-hmrc-access-code
 
 ENV JAR_PATH build/libs
-ARG VERSION
+
+RUN yum update -y glibc && \
+    yum update -y nss && \
+    yum update -y bind-license
 
 WORKDIR /app
 
