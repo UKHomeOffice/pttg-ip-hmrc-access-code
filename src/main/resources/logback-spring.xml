@@ -26,6 +26,10 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
+    <logger name="org.apache.http.client.protocol.ResponseProcessCookies" additivity="false" level="ERROR">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
     <logger name="com.github.tomakehurst.wiremock" additivity="false" level="INFO">
         <appender-ref ref="consoleAppender"/>
     </logger>
