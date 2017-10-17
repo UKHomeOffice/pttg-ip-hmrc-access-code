@@ -53,7 +53,6 @@
         </module>
         <module name="NestedTryDepth"/>
         <module name="FinalClass"/>
-        <module name="InterfaceIsType"/>
         <module name="BooleanExpressionComplexity">
             <property name="max" value="10"/>
         </module>

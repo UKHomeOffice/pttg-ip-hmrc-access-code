@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import java.text.SimpleDateFormat;
+
 @Configuration
 public class SpringConfiguration extends WebMvcConfigurerAdapter {
 
@@ -17,9 +19,11 @@ public class SpringConfiguration extends WebMvcConfigurerAdapter {
         initialiseObjectMapper(objectMapper);
     }
 
-    public static void initialiseObjectMapper(ObjectMapper objectMapper) {
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public static void initialiseObjectMapper(ObjectMapper m) {
+        m.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        m.enable(SerializationFeature.INDENT_OUTPUT);
+        m.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Bean
@@ -31,6 +35,5 @@ public class SpringConfiguration extends WebMvcConfigurerAdapter {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
-
 
 }
