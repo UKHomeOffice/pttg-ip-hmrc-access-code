@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg.api;
+package uk.gov.digital.ho.pttg.hmrc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +9,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.IOException;
 
-public class AccessCodeTest {
+public class AccessCodeHmrcSerializationTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -18,7 +18,7 @@ public class AccessCodeTest {
 
         String hmrcResponse = "{\"access_token\": \"some access token\"}";
 
-        AccessCode accessCode = mapper.readValue(hmrcResponse, AccessCode.class);
+        AccessCodeHmrc accessCode = mapper.readValue(hmrcResponse, AccessCodeHmrc.class);
 
         Assertions.assertThat(accessCode.getCode()).isEqualTo("some access token");
     }
@@ -28,7 +28,7 @@ public class AccessCodeTest {
 
         String expectedJson = "{\"code\": \"some code\"}";
 
-        AccessCode accessCode = new AccessCode("some code", 0, "some refresh token");
+        AccessCodeHmrc accessCode = new AccessCodeHmrc("some code", 0, "some refresh token");
 
         String jsonFromObject = mapper.writeValueAsString(accessCode);
 
