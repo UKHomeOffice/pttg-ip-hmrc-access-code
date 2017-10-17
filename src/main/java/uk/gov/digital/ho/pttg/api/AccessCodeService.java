@@ -63,7 +63,7 @@ class AccessCodeService {
     }
 
     private boolean accessCodeShouldBeRefreshed() {
-        return getPersistedAccessCode().getCreatedDate().isBefore(LocalDateTime.now().minus((refreshInterval/2), ChronoUnit.MILLIS));
+        return getPersistedAccessCode().getUpdatedDate().isBefore(LocalDateTime.now().minus((refreshInterval/2), ChronoUnit.MILLIS));
     }
 
     private AccessCodeJpa getPersistedAccessCode() {

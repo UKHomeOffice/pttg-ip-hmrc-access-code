@@ -63,7 +63,7 @@ public class AccessCodeServiceTest {
 
         assertThat(arg.getCode()).isEqualTo(ACCESS_CODE);
         assertThat(arg.getExpiry()).isAfter(JAN_14_2014_19_30);
-        assertThat(arg.getCreatedDate()).isAfter(existingAccessCodeRecord.getCreatedDate());
+        assertThat(arg.getUpdatedDate()).isAfter(existingAccessCodeRecord.getUpdatedDate());
     }
 
     @Test

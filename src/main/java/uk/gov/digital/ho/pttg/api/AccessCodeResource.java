@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class AccessCodeResource {
 
-    private final AccessCodeService accessCodeGenerator;
+    private final AccessCodeService accessCodeService;
 
     @Autowired
-    public AccessCodeResource(AccessCodeService accessCodeGenerator) {
-        this.accessCodeGenerator = accessCodeGenerator;
+    public AccessCodeResource(AccessCodeService accessCodeService) {
+        this.accessCodeService = accessCodeService;
     }
 
     @GetMapping(path = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,7 +26,7 @@ public class AccessCodeResource {
 
         log.info("getCurrentAccessCode called");
 
-        AccessCode accessCode = accessCodeGenerator.getAccessCode();
+        AccessCode accessCode = accessCodeService.getAccessCode();
 
         log.info("getCurrentAccessCode returning accessCode");
 
@@ -39,6 +39,6 @@ public class AccessCodeResource {
 
         log.info("refresh access code called");
 
-        accessCodeGenerator.refreshAccessCode();
+        accessCodeService.refreshAccessCode();
     }
 }

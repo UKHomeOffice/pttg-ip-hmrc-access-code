@@ -19,7 +19,7 @@ public class AccessCodeJpa {
 
     private LocalDateTime expiry;
 
-    private LocalDateTime createdDate = LocalDateTime.now();
+    private LocalDateTime updatedDate = LocalDateTime.now();
 
     private String code;
 
@@ -31,6 +31,6 @@ public class AccessCodeJpa {
     @PrePersist
     @PreUpdate
     public void onSaveOrUpdate() {
-        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
     }
 }
