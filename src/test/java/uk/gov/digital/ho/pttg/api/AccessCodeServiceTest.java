@@ -92,6 +92,6 @@ public class AccessCodeServiceTest {
      */
     private void adjustAccessCodeCreationDateToAllowRefresh(AccessCodeJpa existingAccessCodeRecord) {
         PropertyAccessor myAccessor = PropertyAccessorFactory.forDirectFieldAccess(existingAccessCodeRecord);
-        myAccessor.setPropertyValue("createdDate", LocalDateTime.now().minus(REFRESH_INTERVAL, ChronoUnit.MILLIS));
+        myAccessor.setPropertyValue("updatedDate", LocalDateTime.now().minus(REFRESH_INTERVAL, ChronoUnit.MILLIS));
     }
 }
