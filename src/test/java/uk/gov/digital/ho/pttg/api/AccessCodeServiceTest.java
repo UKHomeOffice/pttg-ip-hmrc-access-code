@@ -78,13 +78,31 @@ public class AccessCodeServiceTest {
     }
 
     @Test
-    public void shouldRetrieveAccessCode(){
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
+    public void shouldRetrieveAccessCodeWithoutTriggeringRefresh(){
+        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(LocalDateTime.now().plusMinutes(30), EXISTING_ACCESS_CODE);
         when(mockRepo.findOne(AccessRepository.ACCESS_ID)).thenReturn(existingAccessCodeRecord);
 
-        Assertions.assertThat(service.getAccessCode()).isEqualTo(new AccessCode(EXISTING_ACCESS_CODE, JAN_14_2014_19_30));
+        Assertions.assertThat(service.getAccessCode()).hasFieldOrPropertyWithValue("code", EXISTING_ACCESS_CODE);
 
         verify(mockClient, never()).getAccessCodeFromHmrc(anyString());
+    }
+
+    @Test
+    public void shouldRetrieveAccessCodeTriggeringRefreshAsExpired(){
+
+        when(mockClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
+        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
+
+        when(mockRepo.findOne(AccessRepository.ACCESS_ID)).thenReturn(existingAccessCodeRecord);
+
+        Assertions.assertThat(service.getAccessCode()).hasFieldOrPropertyWithValue("code", ACCESS_CODE);
+
+        verify(mockRepo).save(captorAccessCodeJpa.capture());
+        AccessCodeJpa arg = captorAccessCodeJpa.getValue();
+
+        assertThat(arg.getCode()).isEqualTo(ACCESS_CODE);
+        assertThat(arg.getExpiry()).isAfter(JAN_14_2014_19_30);
+        assertThat(arg.getUpdatedDate()).isAfter(existingAccessCodeRecord.getUpdatedDate());
     }
 
     /* refresh will only occur if the access code hasn't been recently refreshed

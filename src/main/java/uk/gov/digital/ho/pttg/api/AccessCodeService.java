@@ -42,24 +42,27 @@ class AccessCodeService {
 
     AccessCode getAccessCode() {
 
-        final AccessCodeJpa accessCodeJpa = getPersistedAccessCode();
+        final AccessCodeJpa accessCodeJpa = ensureAccessCodeIsValid(getPersistedAccessCode());
         return new AccessCode(accessCodeJpa.getCode(), accessCodeJpa.getExpiry());
     }
 
     void refreshAccessCode() {
         if (accessCodeShouldBeRefreshed()) {
-            final AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
-            persistOnSuccessfulRetrieval(accessCodeFromHmrc);
+            retrieveAndPersistAccessCode();
         } else {
             log.info("Ignoring refresh request -  access code was refreshed at the last {} minutes", TimeUnit.MILLISECONDS.toMinutes(refreshInterval));
         }
     }
 
-    private void persistOnSuccessfulRetrieval(AccessCodeHmrc accessCodeFromHmrc) {
+    private AccessCodeJpa retrieveAndPersistAccessCode() {
+        AccessCodeJpa accessCodeJpa = null;
+        final AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
         if (accessCodeFromHmrc !=null) {
             LocalDateTime expiry = calculateAccessCodeExpiry(accessCodeFromHmrc.getValidDuration());
-            repository.save(new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode()));
+            accessCodeJpa = new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode());
+            repository.save(accessCodeJpa);
         }
+        return accessCodeJpa;
     }
 
     private boolean accessCodeShouldBeRefreshed() {
@@ -68,6 +71,14 @@ class AccessCodeService {
 
     private AccessCodeJpa getPersistedAccessCode() {
         return repository.findOne(ACCESS_ID);
+    }
+
+    private AccessCodeJpa ensureAccessCodeIsValid(AccessCodeJpa accessCode) {
+        AccessCodeJpa accessCodeJpa = accessCode;
+        if(accessCode.getExpiry().isBefore(LocalDateTime.now())){
+            accessCodeJpa = retrieveAndPersistAccessCode();
+        }
+        return accessCodeJpa;
     }
 
     private String getTotpCode() {
