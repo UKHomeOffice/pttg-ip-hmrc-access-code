@@ -46,7 +46,7 @@ public class HmrcClient {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        log.info("Calling HMRC for new oauth/token");
+        log.info("Calling HMRC for new access code");
 
         try {
             accessCode = restTemplate.postForEntity(url + "/oauth/token", request, AccessCodeHmrc.class).getBody();
@@ -55,7 +55,7 @@ public class HmrcClient {
             throw new ApplicationExceptions.HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
         }
 
-        log.info("Received AuthToken response");
+        log.info("Received access code response");
 
         return accessCode;
     }

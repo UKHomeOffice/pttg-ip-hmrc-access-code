@@ -59,8 +59,8 @@ class AccessCodeService {
         final AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
         if (accessCodeFromHmrc !=null) {
             LocalDateTime expiry = calculateAccessCodeExpiry(accessCodeFromHmrc.getValidDuration());
-            accessCodeJpa = new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode());
-            repository.save(accessCodeJpa);
+            log.info("Persisting new Access Code with expiry {}", expiry);
+            repository.save(new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode()));
         }
         return accessCodeJpa;
     }
@@ -76,6 +76,7 @@ class AccessCodeService {
     private AccessCodeJpa ensureAccessCodeIsValid(AccessCodeJpa accessCode) {
         AccessCodeJpa accessCodeJpa = accessCode;
         if(accessCode.getExpiry().isBefore(LocalDateTime.now())){
+            log.warn("Access code has expired, about to retrieve new one");
             accessCodeJpa = retrieveAndPersistAccessCode();
         }
         return accessCodeJpa;
