@@ -60,7 +60,8 @@ class AccessCodeService {
         if (accessCodeFromHmrc !=null) {
             LocalDateTime expiry = calculateAccessCodeExpiry(accessCodeFromHmrc.getValidDuration());
             log.info("Persisting new Access Code with expiry {}", expiry);
-            repository.save(new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode()));
+            accessCodeJpa = new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode());
+            repository.save(accessCodeJpa);
         }
         return accessCodeJpa;
     }
