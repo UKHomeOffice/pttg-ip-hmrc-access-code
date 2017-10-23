@@ -7,6 +7,8 @@ import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurerAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,29 +19,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DropwizardMetricsConfig extends MetricsConfigurerAdapter {
 
-    @Qualifier("getMetricRegistry")
-    @Autowired
-    private MetricRegistry registry;
-
-    /*@Bean(destroyMethod = "stop")
-    public GraphiteReporter graphiteReporter() {
-        GraphiteSender sender = new Graphite("localhost", 2003);
-        GraphiteReporter reporter = GraphiteReporter.forRegistry(registry).prefixedWith("access-code").convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS).build(sender);
-        reporter.start(10, TimeUnit.SECONDS);
-        return reporter;
-    }*/
-
     @Bean(destroyMethod = "stop")
-    public Slf4jReporter slf4jReporter() {
+    @Autowired
+    @ConditionalOnProperty(value = "log.metrics", havingValue = "true")
+    public Slf4jReporter slf4jReporter(@Qualifier("getMetricRegistry") MetricRegistry registry, @Value("${log.metrics.interval}") int loggingInterval) {
         Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
                 .outputTo(log)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build();
-        reporter.start(5, TimeUnit.MINUTES);
+        reporter.start(loggingInterval, TimeUnit.MINUTES);
         return reporter;
     }
 
-
- 
 }
