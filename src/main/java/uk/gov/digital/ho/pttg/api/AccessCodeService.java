@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.pttg.application.TotpGenerator;
+import uk.gov.digital.ho.pttg.audit.AuditClient;
 import uk.gov.digital.ho.pttg.hmrc.AccessCodeHmrc;
 import uk.gov.digital.ho.pttg.hmrc.HmrcClient;
 import uk.gov.digital.ho.pttg.jpa.AccessCodeJpa;
@@ -17,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
+import static uk.gov.digital.ho.pttg.audit.AuditEventType.HMRC_ACCESS_CODE_REQUEST;
 import static uk.gov.digital.ho.pttg.jpa.AccessRepository.ACCESS_ID;
 
 @Component
@@ -25,24 +27,26 @@ class AccessCodeService {
 
     private final HmrcClient hmrcClient;
     private final String totpKey;
-
     private final int refreshInterval;
-    private AccessRepository repository;
+    private final AccessRepository repository;
+    private final AuditClient auditClient;
 
     @Autowired
     public AccessCodeService(HmrcClient hmrcClient,
                              @Value("${totp.key}") String totpKey,
                              @Value("${refresh.interval}") int refreshInterval,
-                             AccessRepository accessRepository) {
+                             AccessRepository accessRepository,
+                             AuditClient auditClient) {
+
         this.hmrcClient = hmrcClient;
         this.totpKey = totpKey;
         this.refreshInterval = refreshInterval;
         this.repository = accessRepository;
+        this.auditClient = auditClient;
     }
 
     AccessCode getAccessCode() {
-
-        final AccessCodeJpa accessCodeJpa = ensureAccessCodeIsValid(getPersistedAccessCode());
+        AccessCodeJpa accessCodeJpa = ensureAccessCodeIsValid(getPersistedAccessCode());
         return new AccessCode(accessCodeJpa.getCode(), accessCodeJpa.getExpiry());
     }
 
@@ -55,14 +59,20 @@ class AccessCodeService {
     }
 
     private AccessCodeJpa retrieveAndPersistAccessCode() {
+
         AccessCodeJpa accessCodeJpa = null;
-        final AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
-        if (accessCodeFromHmrc !=null) {
+
+        auditClient.add(HMRC_ACCESS_CODE_REQUEST);
+
+        AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
+
+        if (accessCodeFromHmrc != null) {
             LocalDateTime expiry = calculateAccessCodeExpiry(accessCodeFromHmrc.getValidDuration());
             log.info("Persisting new Access Code with expiry {}", expiry);
             accessCodeJpa = new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode());
             repository.save(accessCodeJpa);
         }
+
         return accessCodeJpa;
     }
 
@@ -75,11 +85,14 @@ class AccessCodeService {
     }
 
     private AccessCodeJpa ensureAccessCodeIsValid(AccessCodeJpa accessCode) {
+
         AccessCodeJpa accessCodeJpa = accessCode;
-        if(accessCode.getExpiry().isBefore(LocalDateTime.now())){
+
+        if (accessCode.getExpiry().isBefore(LocalDateTime.now())) {
             log.warn("Access code has expired, about to retrieve new one");
             accessCodeJpa = retrieveAndPersistAccessCode();
         }
+
         return accessCodeJpa;
     }
 
