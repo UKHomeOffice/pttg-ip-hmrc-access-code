@@ -4,7 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.pttg.api.RequestData;
 
@@ -35,6 +39,10 @@ public class AuditClient {
         this.auditEndpoint = auditEndpoint;
     }
 
+    @Retryable(
+            value = { RestClientException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 10000))
     public void add(AuditEventType eventType) {
         log.info("POST data for {} to audit service", eventType.name());
 
@@ -43,6 +51,12 @@ public class AuditClient {
         restTemplate.exchange(auditEndpoint, POST, toEntity(auditableData), Void.class);
 
         log.info("data POSTed to audit service");
+    }
+
+    @Recover
+    void addRetryFailureRecovery(RestClientException e, AuditEventType eventType) {
+        log.error("Failed to audit after retries (should we carry on?)");
+        throw(e);
     }
 
     private AuditableData generateAuditableData(AuditEventType eventType) {
@@ -54,7 +68,7 @@ public class AuditClient {
                                     requestData.deploymentName(),
                                     requestData.deploymentNamespace(),
                                     eventType,
-                                    "");
+                                    "{}");
     }
 
     private HttpEntity<AuditableData> toEntity(AuditableData auditableData) {
