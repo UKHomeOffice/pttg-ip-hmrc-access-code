@@ -97,6 +97,6 @@ public class AuditClientTest {
         assertThat(auditableData.getDeploymentName()).isEqualTo("some deployment name");
         assertThat(auditableData.getDeploymentNamespace()).isEqualTo("some deployment namespace");
         assertThat(auditableData.getEventType()).isEqualTo(HMRC_ACCESS_CODE_REQUEST);
-        assertThat(auditableData.getData()).isEmpty();
+        assertThat(auditableData.getData()).isEqualTo("{}");
     }
 }
