@@ -41,10 +41,9 @@ public class AuditClient {
 
     @Retryable(
             value = { RestClientException.class },
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 10000))
+            backoff = @Backoff(delay = 100))
     public void add(AuditEventType eventType) {
-        log.info("POST data for {} to audit service", eventType.name());
+        log.info("POST data for {} to audit service");
 
         AuditableData auditableData = generateAuditableData(eventType);
 
@@ -55,8 +54,7 @@ public class AuditClient {
 
     @Recover
     void addRetryFailureRecovery(RestClientException e, AuditEventType eventType) {
-        log.error("Failed to audit after retries (should we carry on?)");
-        throw(e);
+        log.error("Failed to audit {} after retries", eventType);
     }
 
     private AuditableData generateAuditableData(AuditEventType eventType) {
