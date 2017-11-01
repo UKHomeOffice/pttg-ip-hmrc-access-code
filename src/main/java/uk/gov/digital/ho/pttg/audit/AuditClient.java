@@ -1,6 +1,6 @@
 package uk.gov.digital.ho.pttg.audit;
 
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,13 +16,12 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static java.util.logging.Level.SEVERE;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Component
-@Log
+@Slf4j
 public class AuditClient {
 
     private final Clock clock;
@@ -44,7 +43,7 @@ public class AuditClient {
             value = { RestClientException.class },
             backoff = @Backoff(delay = 100))
     public void add(AuditEventType eventType) {
-        log.info(String.format("POST data for %s to audit service", eventType.name()));
+        log.info("POST data for {} to audit service");
 
         AuditableData auditableData = generateAuditableData(eventType);
 
@@ -55,7 +54,7 @@ public class AuditClient {
 
     @Recover
     void addRetryFailureRecovery(RestClientException e, AuditEventType eventType) {
-        log.log(SEVERE, "Failed to audit {} after retries", eventType);
+        log.error("Failed to audit {} after retries", eventType);
     }
 
     private AuditableData generateAuditableData(AuditEventType eventType) {
