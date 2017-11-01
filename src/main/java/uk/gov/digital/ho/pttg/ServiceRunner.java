@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AccessCodeApplication {
+public class ServiceRunner {
 
     public static void main(String[] args) {
-        SpringApplication.run(AccessCodeApplication.class, args);
+        SpringApplication.run(ServiceRunner.class, args);
     }
 
 }

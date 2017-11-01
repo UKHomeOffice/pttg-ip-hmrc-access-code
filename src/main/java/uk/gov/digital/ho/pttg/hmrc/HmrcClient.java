@@ -18,9 +18,9 @@ import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 @Slf4j
 public class HmrcClient {
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
     private final String clientId;
-    private String url;
+    private final String url;
 
     @Autowired
     public HmrcClient(RestTemplate restTemplate,
