@@ -41,7 +41,8 @@ public class AuditClient {
 
     @Retryable(
             value = { RestClientException.class },
-            backoff = @Backoff(delay = 100))
+            maxAttemptsExpression = "#{${audit.service.retry.attempts}}",
+            backoff = @Backoff(delayExpression = "#{${audit.service.retry.delay}}"))
     public void add(AuditEventType eventType) {
         log.info("POST data for {} to audit service");
 
