@@ -3,33 +3,70 @@ package uk.gov.digital.ho.pttg.application;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.ZoneId;
 
 @Configuration
 public class SpringConfiguration extends WebMvcConfigurerAdapter {
 
-    public SpringConfiguration(ObjectMapper objectMapper) {
+    private final boolean useProxy;
+    private final String hmrcBaseUrl;
+    private final String proxyHost;
+    private final Integer proxyPort;
+
+    public SpringConfiguration(ObjectMapper objectMapper,
+                               @Value("${proxy.enabled:false}") boolean useProxy,
+                               @Value("${hmrc.endpoint:}") String hmrcBaseUrl,
+                               @Value("${proxy.host:}") String proxyHost,
+                               @Value("${proxy.port}") Integer proxyPort) {
+
+        this.useProxy =useProxy;
+        this.hmrcBaseUrl = hmrcBaseUrl;
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
         initialiseObjectMapper(objectMapper);
     }
 
-    public static void initialiseObjectMapper(ObjectMapper objectMapper) {
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static ObjectMapper initialiseObjectMapper(final ObjectMapper m) {
+        m.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        m.enable(SerializationFeature.INDENT_OUTPUT);
+        m.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return m;
     }
 
     @Bean
-    Logger getLogger() {
-        return org.slf4j.LoggerFactory.getLogger("uk.gov.digital.ho.pttg");
+    public RestTemplate createRestTemplate(RestTemplateBuilder builder, ObjectMapper mapper) {
+
+        if (useProxy) {
+            builder = builder.additionalCustomizers(createProxyCustomiser());
+        }
+
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(mapper);
+
+
+        return builder.additionalMessageConverters(converter).build();
     }
 
+    ProxyCustomizer createProxyCustomiser() {
+        return new ProxyCustomizer(hmrcBaseUrl, proxyHost, proxyPort.intValue());
+    }
+
+
+
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+    Clock createClock() {
+        return Clock.system(ZoneId.of("UTC"));
     }
 
 
