@@ -1,0 +1,5 @@
+spring:
+ datasource:
+    url: ${access.jdbc.url}
+    username: ${hmrc.ac.db.username}
+    password: ${hmrc.ac.db.password}

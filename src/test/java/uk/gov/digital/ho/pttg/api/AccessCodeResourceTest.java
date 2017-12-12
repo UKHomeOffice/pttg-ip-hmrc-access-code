@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AccessCodeResourceTest {
@@ -21,29 +21,37 @@ public class AccessCodeResourceTest {
     private AccessCode stubAccessCode;
 
     @Mock
-    private AccessCodeGenerator mockAccessCodeGenerator;
+    private AccessCodeService mockAccessCodeService;
 
     @InjectMocks
     private AccessCodeResource resource;
 
     @Test
-    public void shouldUseCollaborators_getAccessCodeGenerator() throws IOException {
+    public void shouldUseCollaborators_getAccessCode() throws IOException {
 
-        when(mockAccessCodeGenerator.getAccessCode(any(LocalDateTime.class))).thenReturn(stubAccessCode);
+        when(mockAccessCodeService.getAccessCode()).thenReturn(stubAccessCode);
 
-        resource.getAccessCodeGenerator();
+        resource.getAccessCode();
 
-        verify(mockAccessCodeGenerator).getAccessCode(any(LocalDateTime.class));
+        verify(mockAccessCodeService).getAccessCode();
     }
 
     @Test
     public void shouldReturnAccessCodeResponse() throws IOException {
 
-        when(mockAccessCodeGenerator.getAccessCode(any(LocalDateTime.class))).thenReturn(stubAccessCode);
+        when(mockAccessCodeService.getAccessCode()).thenReturn(stubAccessCode);
 
-        ResponseEntity response = resource.getAccessCodeGenerator();
+        ResponseEntity response = resource.getAccessCode();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(((AccessCode)response.getBody())).isEqualTo(stubAccessCode);
+    }
+
+    @Test
+    public void shouldUseCollaborators_refresh() throws IOException {
+
+        resource.refresh();
+
+        verify(mockAccessCodeService).refreshAccessCode();
     }
 }

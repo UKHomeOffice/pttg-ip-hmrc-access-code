@@ -1,7 +1,7 @@
 # pttg-ip-hmrc-access-code
 Proving Things To Government component to produce the current HMRC access code
 
-Income Proving HMRC Access Code API
+HMRC Access Code service
 =
 
 [![Build Status](https://drone.digital.homeoffice.gov.uk/api/badges/UKHomeOffice/pttg-ip-hmrc-access-code/status.svg)](https://drone.digital.homeoffice.gov.uk/UKHomeOffice/pttg-ip-hmrc-access-code)
@@ -11,9 +11,9 @@ Income Proving HMRC Access Code API
 Overview
 -
 
-This is the Income Proving HMRC API. Interfaces with the HMRC to retrieve authentication token. 
+This is the HMRC Access Code service. Interfaces with the HMRC to provide authentication components for [pttg-ip-hmrc]. 
 
-Currently the only client of this service is [pttg-ip-hmrc].
+The main client of this service is [pttg-ip-hmrc], plus a scheduled job [pttg-rps-scheduler].
 
 ## Find Us
 
@@ -50,10 +50,10 @@ This project is licensed under the MIT License - see the [LICENCE.md]
 file for details.
 
 
-
 [contributors]:                     https://github.com/UKHomeOffice/pttg-ip-hmrc-access-code/graphs/contributors
 [pttg-ip-hmrc]:                     https://github.com/UKHomeOffice/pttg-ip-hmrc
-[Quay.io]:                          https://quay.io/repository/ukhomeofficedigital/pttg-ip-hmrc-access-code
+[pttg-rps-scheduler]:               https://github.com/UKHomeOffice/pttg-rps-scheduler
+[Quay.io]:                          https://quay.io/repository/ukhomeofficedigital/pttg-ip-hmrc
 [kubernetes configuration]:         https://github.com/UKHomeOffice/kube-pttg-ip-hmrc-access-code
 [Drone yaml]:                       .drone.yml
 [tags on this repository]:          https://github.com/UKHomeOffice/pttg-ip-hmrc-access-code/tags
