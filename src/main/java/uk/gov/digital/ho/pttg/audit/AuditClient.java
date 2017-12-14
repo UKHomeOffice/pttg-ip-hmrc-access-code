@@ -44,13 +44,14 @@ public class AuditClient {
             maxAttemptsExpression = "#{${audit.service.retry.attempts}}",
             backoff = @Backoff(delayExpression = "#{${audit.service.retry.delay}}"))
     public void add(AuditEventType eventType) {
-        log.info("POST data for {} to audit service");
 
         AuditableData auditableData = generateAuditableData(eventType);
 
+        log.info("POST data for correlation id {} to audit service {}", requestData.correlationId(), auditableData);
+
         restTemplate.exchange(auditEndpoint, POST, toEntity(auditableData), Void.class);
 
-        log.info("data POSTed to audit service");
+        log.info("data POSTed for correlation id {} to audit service", requestData.correlationId());
     }
 
     @Recover

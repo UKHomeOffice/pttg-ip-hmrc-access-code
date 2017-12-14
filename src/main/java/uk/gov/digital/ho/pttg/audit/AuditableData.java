@@ -3,11 +3,13 @@ package uk.gov.digital.ho.pttg.audit;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Getter
+@ToString
 class AuditableData {
 
     @JsonProperty(value="eventId", required=true)
