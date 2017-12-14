@@ -32,7 +32,7 @@ class AccessCodeService {
     private final AuditClient auditClient;
 
     @Autowired
-    public AccessCodeService(HmrcClient hmrcClient,
+    AccessCodeService(HmrcClient hmrcClient,
                              @Value("${totp.key}") String totpKey,
                              @Value("${refresh.interval}") int refreshInterval,
                              AccessRepository accessRepository,
