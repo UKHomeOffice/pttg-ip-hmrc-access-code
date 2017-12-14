@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +19,7 @@ public class RequestData implements HandlerInterceptor {
 
     static final String SESSION_ID_HEADER = "x-session-id";
     static final String CORRELATION_ID_HEADER = "x-correlation-id";
+    static final String USER_ID_HEADER = "x-auth-userid";
 
     @Value("${auditing.deployment.name}") private String deploymentName;
     @Value("${auditing.deployment.namespace}") private String deploymentNamespace;
@@ -31,21 +31,9 @@ public class RequestData implements HandlerInterceptor {
         MDC.clear();
         MDC.put(SESSION_ID_HEADER, initialiseSessionId(request));
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
-
-        log.debug("Added session id {} to MDC: {}", initialiseSessionId(request), sessionId());
-        log.debug("Added correlation id {} to MDC: {}", initialiseCorrelationId(request), correlationId());
+        MDC.put(USER_ID_HEADER, initialiseUserName(request));
 
         return true;
-    }
-
-    private String initialiseSessionId(HttpServletRequest request) {
-        String sessionId = WebUtils.getSessionId(request);
-        return StringUtils.isNotBlank(sessionId) ? sessionId : "unknown";
-    }
-
-    private String initialiseCorrelationId(HttpServletRequest request) {
-        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
-        return StringUtils.isNotBlank(correlationId) ? correlationId : "unknown";
     }
 
     @Override
@@ -55,6 +43,21 @@ public class RequestData implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    }
+
+    private String initialiseSessionId(HttpServletRequest request) {
+        String sessionId = request.getHeader(SESSION_ID_HEADER);
+        return StringUtils.isNotBlank(sessionId) ? sessionId : "unknown";
+    }
+
+    private String initialiseCorrelationId(HttpServletRequest request) {
+        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
+        return StringUtils.isNotBlank(correlationId) ? correlationId : "unknown";
+    }
+
+    private String initialiseUserName(HttpServletRequest request) {
+        String userId = request.getHeader(USER_ID_HEADER);
+        return StringUtils.isNotBlank(userId) ? userId : "anonymous";
     }
 
     public String deploymentName() {
@@ -75,4 +78,7 @@ public class RequestData implements HandlerInterceptor {
         return MDC.get(CORRELATION_ID_HEADER);
     }
 
+    public String userId() {
+        return MDC.get(USER_ID_HEADER);
+    }
 }
