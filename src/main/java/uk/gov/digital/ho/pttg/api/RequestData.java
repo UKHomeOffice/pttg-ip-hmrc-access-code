@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.pttg.api;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import java.nio.charset.Charset;
 import java.util.Base64;
 
 @Component
+@Slf4j
 public class RequestData implements HandlerInterceptor {
 
     static final String SESSION_ID_HEADER = "x-session-id";
@@ -29,6 +31,9 @@ public class RequestData implements HandlerInterceptor {
         MDC.clear();
         MDC.put(SESSION_ID_HEADER, initialiseSessionId(request));
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
+
+        log.debug("Added session id {} to MDC: {}", initialiseSessionId(request), sessionId());
+        log.debug("Added correlation id {} to MDC: {}", initialiseCorrelationId(request), correlationId());
 
         return true;
     }
