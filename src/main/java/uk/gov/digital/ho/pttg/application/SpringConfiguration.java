@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.text.SimpleDateFormat;
 import java.time.Clock;
@@ -69,5 +71,14 @@ public class SpringConfiguration extends WebMvcConfigurerAdapter {
         return Clock.system(ZoneId.of("UTC"));
     }
 
+    @Bean
+    public RequestData createRequestData() {
+        return new RequestData();
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(createRequestData());
+    }
 
 }

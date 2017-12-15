@@ -81,6 +81,7 @@ public class AuditClientTest {
 
         when(mockRequestData.sessionId()).thenReturn("some session id");
         when(mockRequestData.correlationId()).thenReturn("some correlation id");
+        when(mockRequestData.userId()).thenReturn("some user id");
         when(mockRequestData.deploymentName()).thenReturn("some deployment name");
         when(mockRequestData.deploymentNamespace()).thenReturn("some deployment namespace");
 
@@ -93,7 +94,7 @@ public class AuditClientTest {
         assertThat(auditableData.getTimestamp()).isEqualTo(LocalDateTime.parse("2017-08-29T08:00:00"));
         assertThat(auditableData.getSessionId()).isEqualTo("some session id");
         assertThat(auditableData.getCorrelationId()).isEqualTo("some correlation id");
-        assertThat(auditableData.getUserId()).isEmpty();
+        assertThat(auditableData.getUserId()).isEqualTo("some user id");
         assertThat(auditableData.getDeploymentName()).isEqualTo("some deployment name");
         assertThat(auditableData.getDeploymentNamespace()).isEqualTo("some deployment namespace");
         assertThat(auditableData.getEventType()).isEqualTo(HMRC_ACCESS_CODE_REQUEST);

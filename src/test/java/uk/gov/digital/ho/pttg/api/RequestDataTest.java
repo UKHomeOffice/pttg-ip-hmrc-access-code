@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.api.RequestData.CORRELATION_ID_HEADER;
 import static uk.gov.digital.ho.pttg.api.RequestData.SESSION_ID_HEADER;
+import static uk.gov.digital.ho.pttg.api.RequestData.USER_ID_HEADER;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {RequestData.class})
@@ -36,6 +37,7 @@ public class RequestDataTest {
 
         assertThat(MDC.get(SESSION_ID_HEADER)).isEqualTo("unknown");
         assertThat(MDC.get(CORRELATION_ID_HEADER)).isEqualTo("unknown");
+        assertThat(MDC.get(USER_ID_HEADER)).isEqualTo("anonymous");
     }
 
     @Test
@@ -85,5 +87,17 @@ public class RequestDataTest {
         requestData.preHandle(mockRequest, mockResponse, null);
 
         assertThat(requestData.correlationId()).isEqualTo("some correlation id");
+    }
+
+    @Test
+    public void shouldExposeUserId() throws Exception {
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+
+        when(mockRequest.getHeader(USER_ID_HEADER)).thenReturn("some user id");
+
+        requestData.preHandle(mockRequest, mockResponse, null);
+
+        assertThat(requestData.userId()).isEqualTo("some user id");
     }
 }

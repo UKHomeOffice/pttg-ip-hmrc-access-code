@@ -64,7 +64,7 @@ public class AuditClient {
                                     LocalDateTime.now(clock),
                                     requestData.sessionId(),
                                     requestData.correlationId(),
-                                    "",
+                                    requestData.userId(),
                                     requestData.deploymentName(),
                                     requestData.deploymentNamespace(),
                                     eventType,
