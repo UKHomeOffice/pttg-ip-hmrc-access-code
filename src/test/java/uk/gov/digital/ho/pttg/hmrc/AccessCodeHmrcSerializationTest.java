@@ -16,17 +16,19 @@ public class AccessCodeHmrcSerializationTest {
     @Test
     public void shouldUnmarshall() throws IOException {
 
-        String hmrcResponse = "{\"access_token\": \"some access token\"}";
+        String hmrcResponse = "{\"access_token\": \"some access token\", \"expires_in\": 0, \"refresh_token\": \"some refresh token\"}";
 
         AccessCodeHmrc accessCode = mapper.readValue(hmrcResponse, AccessCodeHmrc.class);
 
         Assertions.assertThat(accessCode.getCode()).isEqualTo("some access token");
+        Assertions.assertThat(accessCode.getValidDuration()).isEqualTo(0);
+        Assertions.assertThat(accessCode.getRefreshToken()).isEqualTo("some refresh token");
     }
 
     @Test
     public void shouldMarshall() throws JsonProcessingException, JSONException {
 
-        String expectedJson = "{\"code\": \"some code\"}";
+        String expectedJson = "{\"code\": \"some code\", \"validDuration\": 0, \"refreshToken\": \"some refresh token\"}";
 
         AccessCodeHmrc accessCode = new AccessCodeHmrc("some code", 0, "some refresh token");
 
