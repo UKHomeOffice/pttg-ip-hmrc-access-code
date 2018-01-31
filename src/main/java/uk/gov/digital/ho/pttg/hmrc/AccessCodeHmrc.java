@@ -14,7 +14,7 @@ public class AccessCodeHmrc {
     @JsonCreator
     public AccessCodeHmrc(@JsonProperty(value = "access_token", required = true) String code,
                           @JsonProperty(value = "expires_in", required = true) int expiresIn,
-                          @JsonProperty(value = "refresh_token", required = true) String refreshToken) {
+                          @JsonProperty(value = "refresh_token") String refreshToken) {
         this.code = code;
         this.validDuration = expiresIn;
         this.refreshToken = refreshToken;
