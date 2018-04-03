@@ -26,11 +26,11 @@ public class AccessCodeResource {
     @GetMapping(path = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<AccessCode> getAccessCode() {
 
-        log.info("getCurrentAccessCode called");
+        log.info("Calling AccessCodeService to produce new access code");
 
         AccessCode accessCode = accessCodeService.getAccessCode();
 
-        log.info("getCurrentAccessCode returning accessCode");
+        log.info("AccessCodeService produced new access code");
 
         return ResponseEntity.ok(accessCode);
     }
@@ -40,8 +40,10 @@ public class AccessCodeResource {
     @ResponseStatus(value = HttpStatus.OK)
     public void refresh() {
 
-        log.info("refresh access code called");
+        log.info("Calling AccessCodeService to refresh access code");
 
         accessCodeService.refreshAccessCode();
+
+        log.info("AccessCodeService refreshed access code");
     }
 }
