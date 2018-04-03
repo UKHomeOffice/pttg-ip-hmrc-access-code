@@ -54,7 +54,7 @@ class AccessCodeService {
         if (accessCodeShouldBeRefreshed()) {
             retrieveAndPersistAccessCode();
         } else {
-            log.info("Ignoring refresh request -  access code was refreshed at the last {} minutes", TimeUnit.MILLISECONDS.toMinutes(refreshInterval));
+            log.info("Ignoring refresh request - access code was refreshed at the last {} minutes", TimeUnit.MILLISECONDS.toMinutes(refreshInterval));
         }
     }
 

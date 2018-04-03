@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.pttg.application.ApplicationExceptions;
 
@@ -50,8 +50,8 @@ public class HmrcClient {
 
         try {
             accessCode = restTemplate.postForEntity(url + "/oauth/token", request, AccessCodeHmrc.class).getBody();
-        } catch (RestClientException e) {
-            log.error("Problem retrieving Access Code from HMRC", e);
+        } catch (RestClientResponseException e) {
+            log.error("Problem retrieving Access Code from HMRC {} - {} {}", e.getMessage(), e.getRawStatusCode(), e.getStatusText());
             throw new ApplicationExceptions.HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
         }
 
