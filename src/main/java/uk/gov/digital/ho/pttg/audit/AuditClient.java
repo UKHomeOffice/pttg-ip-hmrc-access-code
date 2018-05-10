@@ -55,8 +55,8 @@ public class AuditClient {
     }
 
     @Recover
-    void addRetryFailureRecovery(RestClientException e, AuditEventType eventType) {
-        log.error("Failed to audit {} after retries", eventType);
+    void ignoreRetryFailure(RuntimeException e, AuditEventType eventType) {
+        log.error("Failed to audit {} after retries due to {}", eventType, e.getMessage());
     }
 
     private AuditableData generateAuditableData(AuditEventType eventType) {
