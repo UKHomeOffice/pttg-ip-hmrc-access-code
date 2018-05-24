@@ -51,7 +51,7 @@ public class HmrcClient {
         try {
             accessCode = restTemplate.postForEntity(url + "/oauth/token", request, AccessCodeHmrc.class).getBody();
         } catch (RestClientResponseException e) {
-            log.error("Problem retrieving Access Code from HMRC {} - {} {}", e.getMessage(), e.getRawStatusCode(), e.getStatusText());
+            log.error("Problem retrieving Access Code from HMRC {} - {}", e.getMessage(), e.getResponseBodyAsString());
             throw new ApplicationExceptions.HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
         }
 
