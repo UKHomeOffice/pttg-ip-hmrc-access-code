@@ -1,13 +1,12 @@
 package uk.gov.digital.ho.pttg.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -17,9 +16,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@SpringBootConfiguration
 @RunWith(MockitoJUnitRunner.class)
+@SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_INFERRED")
 public class SpringConfigurationTest {
 
     @Mock
