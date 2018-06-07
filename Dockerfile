@@ -2,6 +2,7 @@ FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.131
 
 
 ENV USER user-pttg-ip-hmrc-access
+ENV USER_ID 1000
 ENV GROUP group-pttg-ip-hmrc-access
 ENV NAME pttg-ip-hmrc-access-code
 
@@ -14,7 +15,7 @@ RUN yum update -y glibc && \
 WORKDIR /app
 
 RUN groupadd -r ${GROUP} && \
-    useradd -r ${USER} -g ${GROUP} -d /app && \
+    useradd -r ${USER} -u ${USER_ID} -g ${GROUP} -d /app && \
     mkdir -p /app && \
     chown -R ${USER}:${GROUP} /app
 
@@ -25,6 +26,6 @@ RUN chmod a+x /app/run.sh
 
 EXPOSE 8081
 
-USER ${USER}
+USER ${USER_ID}
 
 ENTRYPOINT /app/run.sh
