@@ -43,7 +43,7 @@ public class AccessCodeServiceTest {
     private AccessCodeService service;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         service = new AccessCodeService(mockHmrcClient, TOTP_CODE, REFRESH_INTERVAL, mockRepo, mockAuditClient);
     }
 
