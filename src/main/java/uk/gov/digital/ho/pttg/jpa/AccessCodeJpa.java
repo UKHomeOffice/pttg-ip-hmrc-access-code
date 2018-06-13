@@ -33,4 +33,8 @@ public class AccessCodeJpa {
     public void onSaveOrUpdate() {
         updatedDate = LocalDateTime.now();
     }
+
+    public boolean hasExpired() {
+        return expiry.isBefore(LocalDateTime.now());
+    }
 }

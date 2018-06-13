@@ -46,54 +46,57 @@ class AccessCodeService {
     }
 
     AccessCode getAccessCode() {
-        AccessCodeJpa accessCodeJpa = ensureAccessCodeIsValid(getPersistedAccessCode());
+
+        AccessCodeJpa accessCodeJpa = currentAccessCode();
+
+        if (accessCodeJpa.hasExpired()) {
+            log.warn("Attempt to get expired Access Code - recreate it first");
+            accessCodeJpa = generateAccessCode();
+        }
+
         return new AccessCode(accessCodeJpa.getCode(), accessCodeJpa.getExpiry());
     }
 
     void refreshAccessCode() {
+
         if (accessCodeShouldBeRefreshed()) {
-            retrieveAndPersistAccessCode();
+            log.info("Time to refresh the Access Code");
+            generateAccessCode();
         } else {
-            log.info("Ignoring refresh request - access code was refreshed at the last {} minutes", TimeUnit.MILLISECONDS.toMinutes(refreshInterval));
+            log.info("Ignoring refresh request - Access Code was refreshed at the last {} minutes", TimeUnit.MILLISECONDS.toMinutes(refreshInterval));
         }
     }
 
-    private AccessCodeJpa retrieveAndPersistAccessCode() {
+    private AccessCodeJpa generateAccessCode() {
 
         AccessCodeJpa accessCodeJpa = null;
 
         auditClient.add(HMRC_ACCESS_CODE_REQUEST);
 
+        log.info("Obtain new Access Code from HMRC");
+
         AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
+
+        log.info("Obtained new Access Code from HMRC - persist it");
 
         if (accessCodeFromHmrc != null) {
             LocalDateTime expiry = calculateAccessCodeExpiry(accessCodeFromHmrc.getValidDuration());
             log.info("Persisting new Access Code with expiry {}", expiry);
             accessCodeJpa = new AccessCodeJpa(expiry, accessCodeFromHmrc.getCode());
             repository.save(accessCodeJpa);
+        } else {
+            log.error("Access Code is null - cannot persist it, so current one is now expired!");
         }
 
         return accessCodeJpa;
     }
 
     private boolean accessCodeShouldBeRefreshed() {
-        return getPersistedAccessCode().getUpdatedDate().isBefore(LocalDateTime.now().minus((refreshInterval/2), ChronoUnit.MILLIS));
+        return currentAccessCode().getUpdatedDate().isBefore(LocalDateTime.now().minus((refreshInterval/2), ChronoUnit.MILLIS));
     }
 
-    private AccessCodeJpa getPersistedAccessCode() {
+    private AccessCodeJpa currentAccessCode() {
         return repository.findOne(ACCESS_ID);
-    }
-
-    private AccessCodeJpa ensureAccessCodeIsValid(AccessCodeJpa accessCode) {
-
-        AccessCodeJpa accessCodeJpa = accessCode;
-
-        if (accessCode.getExpiry().isBefore(LocalDateTime.now())) {
-            log.warn("Access code has expired, about to retrieve new one");
-            accessCodeJpa = retrieveAndPersistAccessCode();
-        }
-
-        return accessCodeJpa;
     }
 
     private String getTotpCode() {
