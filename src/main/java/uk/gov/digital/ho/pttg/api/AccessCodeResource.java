@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.pttg.api;
 
-import com.codahale.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,6 @@ public class AccessCodeResource {
         this.accessCodeService = accessCodeService;
     }
 
-    @Timed
     @GetMapping(path = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<AccessCode> getAccessCode() {
 
@@ -35,7 +33,6 @@ public class AccessCodeResource {
         return ResponseEntity.ok(accessCode);
     }
 
-    @Timed
     @PostMapping(path = "/refresh")
     @ResponseStatus(value = HttpStatus.OK)
     public void refresh() {
