@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.TimeZone;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.POST;
@@ -72,8 +73,14 @@ public class AuditClientTest {
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), captorHttpEntity.capture(), eq(Void.class));
 
         HttpHeaders headers = captorHttpEntity.getValue().getHeaders();
-        assertThat(headers.get("Authorization").get(0)).isEqualTo("some basic auth header value");
-        assertThat(headers.get("Content-Type").get(0)).isEqualTo(APPLICATION_JSON_VALUE);
+
+        assertThat(headers.containsKey("Authorization")).isTrue();
+        assertThat(requireNonNull(headers.get("Authorization")).size()).isGreaterThan(0);
+        assertThat(requireNonNull(headers.get("Authorization")).get(0)).isEqualTo("some basic auth header value");
+
+        assertThat(headers.containsKey("Content-Type")).isTrue();
+        assertThat(requireNonNull(headers.get("Content-Type")).size()).isGreaterThan(0);
+        assertThat(requireNonNull(headers.get("Content-Type")).get(0)).isEqualTo(APPLICATION_JSON_VALUE);
     }
 
     @Test
@@ -90,6 +97,7 @@ public class AuditClientTest {
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), captorHttpEntity.capture(), eq(Void.class));
 
         AuditableData auditableData = (AuditableData) captorHttpEntity.getValue().getBody();
+        assertThat(auditableData).isNotNull();
         assertThat(auditableData.getEventId()).isNotEmpty();
         assertThat(auditableData.getTimestamp()).isEqualTo(LocalDateTime.parse("2017-08-29T08:00:00"));
         assertThat(auditableData.getSessionId()).isEqualTo("some session id");

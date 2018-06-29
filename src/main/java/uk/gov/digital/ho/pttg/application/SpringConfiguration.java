@@ -11,7 +11,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.text.SimpleDateFormat;
@@ -20,7 +20,7 @@ import java.time.ZoneId;
 
 @Configuration
 @EnableRetry
-public class SpringConfiguration extends WebMvcConfigurerAdapter {
+public class SpringConfiguration implements WebMvcConfigurer {
 
     private final boolean useProxy;
     private final String hmrcBaseUrl;

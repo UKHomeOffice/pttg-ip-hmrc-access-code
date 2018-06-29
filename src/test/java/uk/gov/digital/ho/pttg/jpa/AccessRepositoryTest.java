@@ -16,18 +16,19 @@ import static uk.gov.digital.ho.pttg.jpa.AccessRepository.ACCESS_ID;
 public class AccessRepositoryTest {
 
     private static final String ACCESS_CODE = "newcode";
+
     @Autowired
     private AccessRepository repository;
 
     @Test
-    public void shouldRetrieveAccessCode() throws Exception {
-        assertThat(repository.findOne(ACCESS_ID)).hasNoNullFieldsOrProperties();
+    public void shouldRetrieveAccessCode() {
+        assertThat(repository.findById(ACCESS_ID).get()).hasNoNullFieldsOrProperties();
     }
 
     @Test
-    public void shouldOnlyEverBeOneRow() throws Exception {
+    public void shouldOnlyEverBeOneRow() {
         repository.save(new AccessCodeJpa(LocalDateTime.now().plusMinutes(3), ACCESS_CODE));
         assertThat(repository.findAll()).hasSize(1);
-        assertThat(repository.findOne(ACCESS_ID)).hasFieldOrPropertyWithValue("code",ACCESS_CODE);
+        assertThat(repository.findById(ACCESS_ID).get()).hasFieldOrPropertyWithValue("code",ACCESS_CODE);
     }
 }

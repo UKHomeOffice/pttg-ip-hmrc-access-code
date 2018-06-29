@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import uk.gov.digital.ho.pttg.audit.AuditClient;
@@ -18,6 +18,7 @@ import uk.gov.digital.ho.pttg.jpa.AccessRepository;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -54,7 +55,7 @@ public class AccessCodeServiceTest {
 
         adjustAccessCodeCreationDateToAllowRefresh(existingAccessCodeRecord);
 
-        when(mockRepo.findOne(ACCESS_ID)).thenReturn(existingAccessCodeRecord);
+        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         service.refreshAccessCode();
 
@@ -68,19 +69,21 @@ public class AccessCodeServiceTest {
 
     @Test
     public void shouldNotPersistAccessCodeIfRecentlyReplaced(){
-        when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
-        when(mockRepo.findOne(ACCESS_ID)).thenReturn(existingAccessCodeRecord);
+
+        AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
+
+        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         service.refreshAccessCode();
 
         verify(mockRepo, never()).save(any(AccessCodeJpa.class));
+        verifyZeroInteractions(mockHmrcClient);
     }
 
     @Test
     public void shouldRetrieveAccessCodeWithoutTriggeringRefresh(){
         final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(LocalDateTime.now().plusMinutes(30), EXISTING_ACCESS_CODE);
-        when(mockRepo.findOne(ACCESS_ID)).thenReturn(existingAccessCodeRecord);
+        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         assertThat(service.getAccessCode()).hasFieldOrPropertyWithValue("code", EXISTING_ACCESS_CODE);
 
@@ -93,7 +96,7 @@ public class AccessCodeServiceTest {
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
         final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
 
-        when(mockRepo.findOne(ACCESS_ID)).thenReturn(existingAccessCodeRecord);
+        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         assertThat(service.getAccessCode()).hasFieldOrPropertyWithValue("code", ACCESS_CODE);
 
@@ -110,7 +113,7 @@ public class AccessCodeServiceTest {
         AccessCodeJpa mockAccessCodeJpa = mock(AccessCodeJpa.class);
         when(mockAccessCodeJpa.getUpdatedDate()).thenReturn(LocalDateTime.now().minusDays(1));
 
-        when(mockRepo.findOne(ACCESS_ID)).thenReturn(mockAccessCodeJpa);
+        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(mockAccessCodeJpa));
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(null);
 
         service.refreshAccessCode();
