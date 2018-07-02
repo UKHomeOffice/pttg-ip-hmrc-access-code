@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,9 +27,10 @@ public class RequestData implements HandlerInterceptor {
     @Value("${audit.service.auth}") private String auditBasicAuth;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         MDC.clear();
+
         MDC.put(SESSION_ID_HEADER, initialiseSessionId(request));
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
         MDC.put(USER_ID_HEADER, initialiseUserName(request));
@@ -37,16 +39,20 @@ public class RequestData implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         MDC.clear();
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        response.setHeader(SESSION_ID_HEADER, sessionId());
+        response.setHeader(USER_ID_HEADER, userId());
+        response.setHeader(CORRELATION_ID_HEADER, correlationId());
+        MDC.clear();
     }
 
     private String initialiseSessionId(HttpServletRequest request) {
-        String sessionId = request.getHeader(SESSION_ID_HEADER);
+        String sessionId = WebUtils.getSessionId(request);
         return StringUtils.isNotBlank(sessionId) ? sessionId : "unknown";
     }
 

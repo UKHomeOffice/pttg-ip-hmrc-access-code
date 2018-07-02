@@ -1,7 +1,6 @@
 package uk.gov.digital.ho.pttg.api;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.pttg.application.TotpGenerator;
@@ -31,7 +30,6 @@ class AccessCodeService {
     private final AccessRepository repository;
     private final AuditClient auditClient;
 
-    @Autowired
     AccessCodeService(HmrcClient hmrcClient,
                              @Value("${totp.key}") String totpKey,
                              @Value("${refresh.interval}") int refreshInterval,
@@ -75,7 +73,7 @@ class AccessCodeService {
 
         log.info("Obtain new Access Code from HMRC");
 
-        AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(getTotpCode());
+        AccessCodeHmrc accessCodeFromHmrc = hmrcClient.getAccessCodeFromHmrc(totpCode());
 
         log.info("Obtained new Access Code from HMRC - persist it");
 
@@ -96,10 +94,10 @@ class AccessCodeService {
     }
 
     private AccessCodeJpa currentAccessCode() {
-        return repository.findOne(ACCESS_ID);
+        return repository.findById(ACCESS_ID).orElseThrow(() -> new InternalError(String.format("The database doesn't contain the access code with id %s", ACCESS_ID)));
     }
 
-    private String getTotpCode() {
+    private String totpCode() {
         try {
             return TotpGenerator.getTotpCode(totpKey);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
