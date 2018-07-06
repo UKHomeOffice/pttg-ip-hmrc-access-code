@@ -8,11 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.digital.ho.pttg.application.ApplicationExceptions;
 
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
+import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
 
 @Component
 @Slf4j
@@ -20,15 +21,15 @@ public class HmrcClient {
 
     private final RestTemplate restTemplate;
     private final String clientId;
-    private final String url;
+    private final String accessTokenResource;
 
     @Autowired
     public HmrcClient(RestTemplate restTemplate,
                       @Value("${client.id}") String clientId,
-                      @Value("${hmrc.endpoint}") String url) {
+                      @Value("${hmrc.endpoint}") String baseHmrcUrl) {
         this.restTemplate = restTemplate;
         this.clientId = clientId;
-        this.url = url;
+        this.accessTokenResource = baseHmrcUrl + "/oauth/token";
     }
 
     public AccessCodeHmrc getAccessCodeFromHmrc(String totpCode) {
@@ -49,10 +50,13 @@ public class HmrcClient {
         log.info("Calling HMRC for new access code");
 
         try {
-            accessCode = restTemplate.postForEntity(url + "/oauth/token", request, AccessCodeHmrc.class).getBody();
+            accessCode = restTemplate.postForEntity(accessTokenResource, request, AccessCodeHmrc.class).getBody();
         } catch (RestClientResponseException e) {
             log.error("Problem retrieving Access Code from HMRC {} - {}", e.getMessage(), e.getResponseBodyAsString());
-            throw new ApplicationExceptions.HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
+            throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
+        } catch (RestClientException e) {
+            log.error("Problem retrieving Access Code from HMRC {}", e.getMessage());
+            throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
         }
 
         log.info("Received access code response");
