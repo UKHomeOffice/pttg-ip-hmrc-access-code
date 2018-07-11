@@ -2,9 +2,11 @@ package uk.gov.digital.ho.pttg.hmrc;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode
 public class AccessCodeHmrc {
 
     private final String code;
