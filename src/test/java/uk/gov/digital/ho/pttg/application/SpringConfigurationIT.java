@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -26,6 +27,9 @@ public class SpringConfigurationIT {
     @Test
     public void shouldLoadRestTemplateTimeouts() {
         RestTemplateProperties restTemplateProperties = (RestTemplateProperties)ReflectionTestUtils.getField(springConfiguration, "restTemplateProperties");
+        if(restTemplateProperties == null) {
+            fail("Could not load rest template properties");
+        }
 
         assertThat(restTemplateProperties.getAudit().getReadTimeout()).isEqualTo(1);
         assertThat(restTemplateProperties.getAudit().getConnectTimeout()).isEqualTo(2);
