@@ -25,7 +25,7 @@ public class SpringConfigurationTest {
     @Mock
     private RestTemplate mockRestTemplate;
 
-    private RestTemplateProperties restTemplateProperties;
+    private TimeoutProperties restTemplateProperties;
 
     @Before
     public void setUp() {
@@ -36,9 +36,9 @@ public class SpringConfigurationTest {
 
         when(mockRestTemplateBuilder.build()).thenReturn(mockRestTemplate);
 
-        restTemplateProperties = new RestTemplateProperties();
-        restTemplateProperties.setAudit(new RestTemplateProperties.Audit());
-        restTemplateProperties.setHmrc(new RestTemplateProperties.Hmrc());
+        restTemplateProperties = new TimeoutProperties();
+        restTemplateProperties.setAudit(new TimeoutProperties.Audit());
+        restTemplateProperties.setHmrc(new TimeoutProperties.Hmrc());
     }
 
     @Test
@@ -65,8 +65,8 @@ public class SpringConfigurationTest {
         final int readTimeout = 1234;
         final int connectTimeout = 4321;
 
-        restTemplateProperties.getAudit().setReadTimeout(readTimeout);
-        restTemplateProperties.getAudit().setConnectTimeout(connectTimeout);
+        restTemplateProperties.getAudit().setReadSeconds(readTimeout);
+        restTemplateProperties.getAudit().setConnectSeconds(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
                 false, null, null, null, restTemplateProperties);
 
@@ -86,8 +86,8 @@ public class SpringConfigurationTest {
         final int readTimeout = 1234;
         final int connectTimeout = 4321;
 
-        restTemplateProperties.getHmrc().setReadTimeout(readTimeout);
-        restTemplateProperties.getHmrc().setConnectTimeout(connectTimeout);
+        restTemplateProperties.getHmrc().setReadSeconds(readTimeout);
+        restTemplateProperties.getHmrc().setConnectSeconds(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
                 false, null, null, null, restTemplateProperties);
 

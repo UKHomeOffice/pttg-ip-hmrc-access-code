@@ -14,10 +14,10 @@ import static org.junit.Assert.fail;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(properties = {
-        "resttemplate.audit.read-timeout=1",
-        "resttemplate.audit.connect-timeout=2",
-        "resttemplate.hmrc.read-timeout=3",
-        "resttemplate.hmrc.connect-timeout=4"
+        "timeouts.audit.readSeconds=1",
+        "timeouts.audit.connectSeconds=2",
+        "timeouts.hmrc.readSeconds=3",
+        "timeouts.hmrc.connectSeconds=4"
 })
 public class SpringConfigurationIT {
 
@@ -26,15 +26,15 @@ public class SpringConfigurationIT {
 
     @Test
     public void shouldLoadRestTemplateTimeouts() {
-        RestTemplateProperties restTemplateProperties = (RestTemplateProperties)ReflectionTestUtils.getField(springConfiguration, "restTemplateProperties");
+        TimeoutProperties restTemplateProperties = (TimeoutProperties)ReflectionTestUtils.getField(springConfiguration, "timeoutProperties");
         if(restTemplateProperties == null) {
-            fail("Could not load rest template properties");
+            fail("Could not load timeout properties");
         }
 
-        assertThat(restTemplateProperties.getAudit().getReadTimeout()).isEqualTo(1);
-        assertThat(restTemplateProperties.getAudit().getConnectTimeout()).isEqualTo(2);
-        assertThat(restTemplateProperties.getHmrc().getReadTimeout()).isEqualTo(3);
-        assertThat(restTemplateProperties.getHmrc().getConnectTimeout()).isEqualTo(4);
+        assertThat(restTemplateProperties.getAudit().getReadSeconds()).isEqualTo(1);
+        assertThat(restTemplateProperties.getAudit().getConnectSeconds()).isEqualTo(2);
+        assertThat(restTemplateProperties.getHmrc().getReadSeconds()).isEqualTo(3);
+        assertThat(restTemplateProperties.getHmrc().getConnectSeconds()).isEqualTo(4);
     }
 
 }

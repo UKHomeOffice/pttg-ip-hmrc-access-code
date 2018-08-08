@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,27 +20,26 @@ import java.time.ZoneId;
 
 @Configuration
 @EnableRetry
-@ConfigurationProperties(prefix = "resttemplate")
 public class SpringConfiguration implements WebMvcConfigurer {
 
     private final boolean useProxy;
     private final String hmrcBaseUrl;
     private final String proxyHost;
     private final Integer proxyPort;
-    private final RestTemplateProperties restTemplateProperties;
+    private final TimeoutProperties timeoutProperties;
 
     SpringConfiguration(ObjectMapper objectMapper,
                         @Value("${proxy.enabled:false}") boolean useProxy,
                         @Value("${hmrc.endpoint:}") String hmrcBaseUrl,
                         @Value("${proxy.host:}") String proxyHost,
                         @Value("${proxy.port}") Integer proxyPort,
-                        RestTemplateProperties restTemplateProperties
+                        TimeoutProperties timeoutProperties
     ) {
         this.useProxy = useProxy;
         this.hmrcBaseUrl = hmrcBaseUrl;
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
-        this.restTemplateProperties = restTemplateProperties;
+        this.timeoutProperties = timeoutProperties;
         initialiseObjectMapper(objectMapper);
     }
 
@@ -58,8 +56,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(restTemplateProperties.getAudit().getReadTimeout())
-                .setConnectTimeout(restTemplateProperties.getAudit().getConnectTimeout())
+                .setReadTimeout(timeoutProperties.getAudit().getReadSeconds())
+                .setConnectTimeout(timeoutProperties.getAudit().getConnectSeconds())
                 .build();
     }
 
@@ -68,8 +66,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(restTemplateProperties.getHmrc().getReadTimeout())
-                .setConnectTimeout(restTemplateProperties.getHmrc().getConnectTimeout())
+                .setReadTimeout(timeoutProperties.getHmrc().getReadSeconds())
+                .setConnectTimeout(timeoutProperties.getHmrc().getConnectSeconds())
                 .build();
     }
 
