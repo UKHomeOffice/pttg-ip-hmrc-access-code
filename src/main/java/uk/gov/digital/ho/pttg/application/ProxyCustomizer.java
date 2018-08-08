@@ -10,6 +10,11 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_PROXY_ENABLED;
+
+
 @Slf4j
 public class ProxyCustomizer implements RestTemplateCustomizer {
 
@@ -26,10 +31,12 @@ public class ProxyCustomizer implements RestTemplateCustomizer {
     @Override
     public void customize(RestTemplate restTemplate) {
 
-        log.info("Using proxy {}:{} for {}", proxyHost, proxyPort, hostToProxy);
+        log.warn("Using proxy {}:{} for {}", proxyHost, proxyPort, hostToProxy, value(EVENT, HMRC_PROXY_ENABLED));
 
         HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
         HttpClient httpClient = HttpClientBuilder.create().setRoutePlanner(new HMRCAccessProxyRoutePlanner(proxy, hostToProxy)).build();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
+
+
 }

@@ -5,15 +5,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
+import uk.gov.digital.ho.pttg.application.ApplicationExceptions;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
+
+
 
 @Component
 @Slf4j
@@ -47,20 +51,25 @@ public class HmrcClient {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        log.info("Calling HMRC for new access code");
+        log.debug("Calling HMRC for new access code");
 
         try {
             accessCode = restTemplate.postForEntity(accessTokenResource, request, AccessCodeHmrc.class).getBody();
-        } catch (RestClientResponseException e) {
-            log.error("Problem retrieving Access Code from HMRC {} - {}", e.getMessage(), e.getResponseBodyAsString());
-            throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
-        } catch (RestClientException e) {
-            log.error("Problem retrieving Access Code from HMRC {}", e.getMessage());
-            throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", e);
+            if(accessCode == null) {
+                throw new HmrcAccessCodeServiceRuntimeException("HMRC returned null access code");
+            }
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+           if (statusCode.equals(FORBIDDEN)) {
+                throw new ApplicationExceptions.ProxyForbiddenException("Received a 403 Forbidden response from proxy");
+            } else if (statusCode.equals(UNAUTHORIZED)) {
+                throw new ApplicationExceptions.HmrcUnauthorisedException(ex.getMessage(), ex);
+            } else {
+               throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", ex);
+            }
         }
 
         log.info("Received access code response");
-
         return accessCode;
     }
 }

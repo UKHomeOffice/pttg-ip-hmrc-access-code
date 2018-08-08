@@ -2,6 +2,8 @@ package uk.gov.digital.ho.pttg.application;
 
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,15 +15,21 @@ import java.time.Duration;
 
 import static org.apache.commons.lang3.StringUtils.leftPad;
 
+@Service
 public class TotpGenerator {
 
-    private static Duration totpTimeInterval = Duration.ofSeconds(30);
+    private  Duration totpTimeInterval = Duration.ofSeconds(30);
+    private final String secret;
 
-    public static String getTotpCode(String secret) throws NoSuchAlgorithmException, InvalidKeyException {
-        return getTotpCode(secret, System.currentTimeMillis());
+    public TotpGenerator(@Value("${totp.key}") String secret) {
+        this.secret = secret;
     }
 
-    private static String getTotpCode(String secret, long totpGenerationTimeInMillis) throws InvalidKeyException, NoSuchAlgorithmException {
+    public String getTotpCode() throws NoSuchAlgorithmException, InvalidKeyException {
+        return getTotpCode(System.currentTimeMillis());
+    }
+
+    private String getTotpCode( long totpGenerationTimeInMillis) throws InvalidKeyException, NoSuchAlgorithmException {
         long timeWindow = totpGenerationTimeInMillis / totpTimeInterval.toMillis();
         int codeLength = 8;
         String crypto = "HmacSHA512";
@@ -40,7 +48,7 @@ public class TotpGenerator {
         return StringUtils.left(leftPad(String.valueOf(otp), codeLength, '0'), codeLength);
     }
 
-    private static byte[] hmacSha(String crypto, byte[] keyBytes, byte[] text) throws NoSuchAlgorithmException, InvalidKeyException {
+    private byte[] hmacSha(String crypto, byte[] keyBytes, byte[] text) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac hmac = Mac.getInstance(crypto);
         Key macKey = new SecretKeySpec(keyBytes, "RAW");
         hmac.init(macKey);
