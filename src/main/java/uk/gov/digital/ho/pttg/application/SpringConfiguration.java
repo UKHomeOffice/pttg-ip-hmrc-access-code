@@ -3,6 +3,7 @@ package uk.gov.digital.ho.pttg.application;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -23,11 +24,23 @@ import java.time.ZoneId;
 @ConfigurationProperties(prefix = "resttemplate")
 public class SpringConfiguration implements WebMvcConfigurer {
 
+    private final boolean useProxy;
+    private final String hmrcBaseUrl;
+    private final String proxyHost;
+    private final Integer proxyPort;
     private final RestTemplateProperties restTemplateProperties;
 
     SpringConfiguration(ObjectMapper objectMapper,
+                        @Value("${proxy.enabled:false}") boolean useProxy,
+                        @Value("${hmrc.endpoint:}") String hmrcBaseUrl,
+                        @Value("${proxy.host:}") String proxyHost,
+                        @Value("${proxy.port}") Integer proxyPort,
                         RestTemplateProperties restTemplateProperties
     ) {
+        this.useProxy = useProxy;
+        this.hmrcBaseUrl = hmrcBaseUrl;
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
         this.restTemplateProperties = restTemplateProperties;
         initialiseObjectMapper(objectMapper);
     }
@@ -63,7 +76,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
     private RestTemplateBuilder initaliseRestTemplateBuilder(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
         RestTemplateBuilder builder = restTemplateBuilder;
 
-        if (restTemplateProperties.isProxyEnabled()) {
+        if (useProxy) {
             builder = builder.additionalCustomizers(createProxyCustomizer());
         }
 
@@ -75,7 +88,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
     }
 
     private ProxyCustomizer createProxyCustomizer() {
-        return new ProxyCustomizer(restTemplateProperties.getHmrcBaseUrl(), restTemplateProperties.getProxyHost(), restTemplateProperties.getProxyPort());
+        return new ProxyCustomizer(hmrcBaseUrl, proxyHost, proxyPort);
     }
 
     @Bean

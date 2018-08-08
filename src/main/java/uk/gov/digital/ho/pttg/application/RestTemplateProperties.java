@@ -9,10 +9,6 @@ public class RestTemplateProperties {
 
     private Audit audit;
     private Hmrc hmrc;
-    private boolean proxyEnabled;
-    private String hmrcBaseUrl;
-    private String proxyHost;
-    private Integer proxyPort;
 
     public static class Audit {
         private int readTimeout;
@@ -70,37 +66,5 @@ public class RestTemplateProperties {
 
     public void setHmrc(Hmrc hmrc) {
         this.hmrc = hmrc;
-    }
-
-    public boolean isProxyEnabled() {
-        return proxyEnabled;
-    }
-
-    public void setProxyEnabled(boolean proxyEnabled) {
-        this.proxyEnabled = proxyEnabled;
-    }
-
-    public String getHmrcBaseUrl() {
-        return hmrcBaseUrl;
-    }
-
-    public void setHmrcBaseUrl(String hmrcBaseUrl) {
-        this.hmrcBaseUrl = hmrcBaseUrl;
-    }
-
-    public String getProxyHost() {
-        return proxyHost;
-    }
-
-    public void setProxyHost(String proxyHost) {
-        this.proxyHost = proxyHost;
-    }
-
-    public Integer getProxyPort() {
-        return proxyPort;
-    }
-
-    public void setProxyPort(Integer proxyPort) {
-        this.proxyPort = proxyPort;
     }
 }

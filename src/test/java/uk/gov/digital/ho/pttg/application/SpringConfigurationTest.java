@@ -39,25 +39,22 @@ public class SpringConfigurationTest {
         restTemplateProperties = new RestTemplateProperties();
         restTemplateProperties.setAudit(new RestTemplateProperties.Audit());
         restTemplateProperties.setHmrc(new RestTemplateProperties.Hmrc());
-        restTemplateProperties.setProxyPort(0);
     }
 
     @Test
     public void shouldUseCustomizerWhenProxyEnabled() {
-        restTemplateProperties.setProxyEnabled(true);
-        restTemplateProperties.setHmrcBaseUrl("http://some-fake-hmrc");
-        restTemplateProperties.setProxyHost("some-proxy-host");
 
-        SpringConfiguration config = new SpringConfiguration(new ObjectMapper(), restTemplateProperties);
+        SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
+                true, "", "host", 1234, restTemplateProperties);
         config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder).additionalCustomizers(any(ProxyCustomizer.class));
     }
 
     @Test
     public void shouldNotUseCustomizerByWhenProxyDisabled() {
-        restTemplateProperties.setProxyEnabled(false);
 
-        SpringConfiguration config = new SpringConfiguration(new ObjectMapper(), restTemplateProperties);
+        SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
+                false, null, null, null, restTemplateProperties);
         config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder, never()).additionalCustomizers(any(ProxyCustomizer.class));
     }
@@ -70,7 +67,8 @@ public class SpringConfigurationTest {
 
         restTemplateProperties.getAudit().setReadTimeout(readTimeout);
         restTemplateProperties.getAudit().setConnectTimeout(connectTimeout);
-        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(), restTemplateProperties);
+        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
+                false, null, null, null, restTemplateProperties);
 
         // when
         RestTemplate restTemplate = springConfig.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
@@ -90,7 +88,8 @@ public class SpringConfigurationTest {
 
         restTemplateProperties.getHmrc().setReadTimeout(readTimeout);
         restTemplateProperties.getHmrc().setConnectTimeout(connectTimeout);
-        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(), restTemplateProperties);
+        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
+                false, null, null, null, restTemplateProperties);
 
         // when
         RestTemplate restTemplate = springConfig.hmrcRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
