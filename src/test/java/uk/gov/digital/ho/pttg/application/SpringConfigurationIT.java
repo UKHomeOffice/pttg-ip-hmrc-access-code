@@ -14,10 +14,10 @@ import static org.junit.Assert.fail;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(properties = {
-        "timeouts.audit.readSeconds=1",
-        "timeouts.audit.connectSeconds=2",
-        "timeouts.hmrc.readSeconds=3",
-        "timeouts.hmrc.connectSeconds=4"
+        "timeouts.audit.read-ms=1000",
+        "timeouts.audit.connect-ms=2000",
+        "timeouts.hmrc.read-ms=3000",
+        "timeouts.hmrc.connect-ms=4000"
 })
 public class SpringConfigurationIT {
 
@@ -31,10 +31,10 @@ public class SpringConfigurationIT {
             fail("Could not load timeout properties");
         }
 
-        assertThat(restTemplateProperties.getAudit().getReadSeconds()).isEqualTo(1);
-        assertThat(restTemplateProperties.getAudit().getConnectSeconds()).isEqualTo(2);
-        assertThat(restTemplateProperties.getHmrc().getReadSeconds()).isEqualTo(3);
-        assertThat(restTemplateProperties.getHmrc().getConnectSeconds()).isEqualTo(4);
+        assertThat(restTemplateProperties.getAudit().getReadMs()).isEqualTo(1000);
+        assertThat(restTemplateProperties.getAudit().getConnectMs()).isEqualTo(2000);
+        assertThat(restTemplateProperties.getHmrc().getReadMs()).isEqualTo(3000);
+        assertThat(restTemplateProperties.getHmrc().getConnectMs()).isEqualTo(4000);
     }
 
 }

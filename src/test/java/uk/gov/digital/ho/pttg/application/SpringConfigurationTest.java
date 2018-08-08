@@ -65,8 +65,8 @@ public class SpringConfigurationTest {
         final int readTimeout = 1234;
         final int connectTimeout = 4321;
 
-        restTemplateProperties.getAudit().setReadSeconds(readTimeout);
-        restTemplateProperties.getAudit().setConnectSeconds(connectTimeout);
+        restTemplateProperties.getAudit().setReadMs(readTimeout);
+        restTemplateProperties.getAudit().setConnectMs(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
                 false, null, null, null, restTemplateProperties);
 
@@ -86,8 +86,8 @@ public class SpringConfigurationTest {
         final int readTimeout = 1234;
         final int connectTimeout = 4321;
 
-        restTemplateProperties.getHmrc().setReadSeconds(readTimeout);
-        restTemplateProperties.getHmrc().setConnectSeconds(connectTimeout);
+        restTemplateProperties.getHmrc().setReadMs(readTimeout);
+        restTemplateProperties.getHmrc().setConnectMs(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
                 false, null, null, null, restTemplateProperties);
 

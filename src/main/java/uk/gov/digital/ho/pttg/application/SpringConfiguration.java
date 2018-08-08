@@ -56,8 +56,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(timeoutProperties.getAudit().getReadSeconds())
-                .setConnectTimeout(timeoutProperties.getAudit().getConnectSeconds())
+                .setReadTimeout(timeoutProperties.getAudit().getReadMs())
+                .setConnectTimeout(timeoutProperties.getAudit().getConnectMs())
                 .build();
     }
 
@@ -66,8 +66,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(timeoutProperties.getHmrc().getReadSeconds())
-                .setConnectTimeout(timeoutProperties.getHmrc().getConnectSeconds())
+                .setReadTimeout(timeoutProperties.getHmrc().getReadMs())
+                .setConnectTimeout(timeoutProperties.getHmrc().getConnectMs())
                 .build();
     }
 

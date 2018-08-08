@@ -11,44 +11,44 @@ public class TimeoutProperties {
     private Hmrc hmrc;
 
     public static class Audit {
-        private int readSeconds;
-        private int connectSeconds;
+        private int readMs;
+        private int connectMs;
 
-        public int getReadSeconds() {
-            return readSeconds;
+        public int getReadMs() {
+            return readMs;
         }
 
-        public void setReadSeconds(int readSeconds) {
-            this.readSeconds = readSeconds;
+        public void setReadMs(int readMs) {
+            this.readMs = readMs;
         }
 
-        public int getConnectSeconds() {
-            return connectSeconds;
+        public int getConnectMs() {
+            return connectMs;
         }
 
-        public void setConnectSeconds(int connectSeconds) {
-            this.connectSeconds = connectSeconds;
+        public void setConnectMs(int connectMs) {
+            this.connectMs = connectMs;
         }
     }
 
     public static class Hmrc {
-        private int readSeconds;
-        private int connectSeconds;
+        private int readMs;
+        private int connectMs;
 
-        public int getReadSeconds() {
-            return readSeconds;
+        public int getReadMs() {
+            return readMs;
         }
 
-        public void setReadSeconds(int readSeconds) {
-            this.readSeconds = readSeconds;
+        public void setReadMs(int readMs) {
+            this.readMs = readMs;
         }
 
-        public int getConnectSeconds() {
-            return connectSeconds;
+        public int getConnectMs() {
+            return connectMs;
         }
 
-        public void setConnectSeconds(int connectSeconds) {
-            this.connectSeconds = connectSeconds;
+        public void setConnectMs(int connectMs) {
+            this.connectMs = connectMs;
         }
     }
 
