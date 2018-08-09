@@ -3,16 +3,16 @@ package uk.gov.digital.ho.pttg.application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@ContextConfiguration(classes = {TimeoutProperties.class, SpringConfigurationIT.TestConfig.class})
 @TestPropertySource(properties = {
         "timeouts.audit.read-ms=1000",
         "timeouts.audit.connect-ms=2000",
@@ -21,20 +21,19 @@ import static org.junit.Assert.fail;
 })
 public class SpringConfigurationIT {
 
+    @TestConfiguration
+    @EnableConfigurationProperties
+    public static class TestConfig {}
+
     @Autowired
-    private SpringConfiguration springConfiguration;
+    private TimeoutProperties timeoutProperties;
 
     @Test
     public void shouldLoadRestTemplateTimeouts() {
-        TimeoutProperties restTemplateProperties = (TimeoutProperties)ReflectionTestUtils.getField(springConfiguration, "timeoutProperties");
-        if(restTemplateProperties == null) {
-            fail("Could not load timeout properties");
-        }
-
-        assertThat(restTemplateProperties.getAudit().getReadMs()).isEqualTo(1000);
-        assertThat(restTemplateProperties.getAudit().getConnectMs()).isEqualTo(2000);
-        assertThat(restTemplateProperties.getHmrc().getReadMs()).isEqualTo(3000);
-        assertThat(restTemplateProperties.getHmrc().getConnectMs()).isEqualTo(4000);
+        assertThat(timeoutProperties.getAudit().getReadMs()).isEqualTo(1000);
+        assertThat(timeoutProperties.getAudit().getConnectMs()).isEqualTo(2000);
+        assertThat(timeoutProperties.getHmrc().getReadMs()).isEqualTo(3000);
+        assertThat(timeoutProperties.getHmrc().getConnectMs()).isEqualTo(4000);
     }
 
 }
