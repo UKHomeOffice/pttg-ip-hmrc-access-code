@@ -12,14 +12,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TimeoutProperties.class, SpringConfigurationIT.TestConfig.class})
+@ContextConfiguration(classes = {TimeoutProperties.class, TimeoutPropertiesTest.TestConfig.class})
 @TestPropertySource(properties = {
         "timeouts.audit.read-ms=1000",
         "timeouts.audit.connect-ms=2000",
         "timeouts.hmrc.read-ms=3000",
         "timeouts.hmrc.connect-ms=4000"
 })
-public class SpringConfigurationIT {
+public class TimeoutPropertiesTest {
 
     @TestConfiguration
     @EnableConfigurationProperties
