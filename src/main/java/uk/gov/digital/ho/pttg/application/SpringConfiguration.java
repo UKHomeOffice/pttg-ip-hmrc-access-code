@@ -26,24 +26,20 @@ public class SpringConfiguration implements WebMvcConfigurer {
     private final String hmrcBaseUrl;
     private final String proxyHost;
     private final Integer proxyPort;
-
-    private final int restTemplateReadTimeoutInMillis;
-    private final int restTemplateConnectTimeoutInMillis;
+    private final TimeoutProperties timeoutProperties;
 
     SpringConfiguration(ObjectMapper objectMapper,
                         @Value("${proxy.enabled:false}") boolean useProxy,
                         @Value("${hmrc.endpoint:}") String hmrcBaseUrl,
                         @Value("${proxy.host:}") String proxyHost,
                         @Value("${proxy.port}") Integer proxyPort,
-                        @Value("${resttemplate.timeout.read:30000}") int restTemplateReadTimeoutInMillis,
-                        @Value("${resttemplate.timeout.connect:30000}") int restTemplateConnectTimeoutInMillis) {
-
+                        TimeoutProperties timeoutProperties
+    ) {
         this.useProxy = useProxy;
         this.hmrcBaseUrl = hmrcBaseUrl;
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
-        this.restTemplateReadTimeoutInMillis = restTemplateReadTimeoutInMillis;
-        this.restTemplateConnectTimeoutInMillis = restTemplateConnectTimeoutInMillis;
+        this.timeoutProperties = timeoutProperties;
         initialiseObjectMapper(objectMapper);
     }
 
@@ -56,19 +52,37 @@ public class SpringConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    RestTemplate createRestTemplate(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
+    RestTemplate auditRestTemplate(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
+        RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
+
+        return builder
+                .setReadTimeout(timeoutProperties.getAudit().getReadMs())
+                .setConnectTimeout(timeoutProperties.getAudit().getConnectMs())
+                .build();
+    }
+
+    @Bean
+    RestTemplate hmrcRestTemplate(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
+        RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
+
+        return builder
+                .setReadTimeout(timeoutProperties.getHmrc().getReadMs())
+                .setConnectTimeout(timeoutProperties.getHmrc().getConnectMs())
+                .build();
+    }
+
+    private RestTemplateBuilder initaliseRestTemplateBuilder(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
+        RestTemplateBuilder builder = restTemplateBuilder;
+
         if (useProxy) {
-            restTemplateBuilder = restTemplateBuilder.additionalCustomizers(createProxyCustomizer());
+            builder = builder.additionalCustomizers(createProxyCustomizer());
         }
 
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         converter.setObjectMapper(mapper);
+        builder = builder.additionalMessageConverters(converter);
 
-        return restTemplateBuilder
-                .additionalMessageConverters(converter)
-                .setReadTimeout(restTemplateReadTimeoutInMillis)
-                .setConnectTimeout(restTemplateConnectTimeoutInMillis)
-                .build();
+        return builder;
     }
 
     private ProxyCustomizer createProxyCustomizer() {

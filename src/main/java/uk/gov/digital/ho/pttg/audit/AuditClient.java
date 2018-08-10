@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg.audit;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +31,7 @@ public class AuditClient {
     private final RequestData requestData;
 
     public AuditClient(Clock clock,
-                       RestTemplate restTemplate,
+                       @Qualifier(value = "auditRestTemplate") RestTemplate restTemplate,
                        RequestData requestData,
                        @Value("${pttg.audit.endpoint}") String auditEndpoint) {
         this.clock = clock;

@@ -25,6 +25,8 @@ public class SpringConfigurationTest {
     @Mock
     private RestTemplate mockRestTemplate;
 
+    private TimeoutProperties restTemplateProperties;
+
     @Before
     public void setUp() {
         when(mockRestTemplateBuilder.additionalCustomizers(any(ProxyCustomizer.class))).thenReturn(mockRestTemplateBuilder);
@@ -33,14 +35,18 @@ public class SpringConfigurationTest {
         when(mockRestTemplateBuilder.setConnectTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
 
         when(mockRestTemplateBuilder.build()).thenReturn(mockRestTemplate);
+
+        restTemplateProperties = new TimeoutProperties();
+        restTemplateProperties.setAudit(new TimeoutProperties.Audit());
+        restTemplateProperties.setHmrc(new TimeoutProperties.Hmrc());
     }
 
     @Test
     public void shouldUseCustomizerWhenProxyEnabled() {
 
         SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
-                true, "", "host", 1234, 0, 0);
-        config.createRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
+                true, "", "host", 1234, restTemplateProperties);
+        config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder).additionalCustomizers(any(ProxyCustomizer.class));
     }
 
@@ -48,20 +54,45 @@ public class SpringConfigurationTest {
     public void shouldNotUseCustomizerByWhenProxyDisabled() {
 
         SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
-                false, null, null, null, 0, 0);
-        config.createRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
+                false, null, null, null, restTemplateProperties);
+        config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder, never()).additionalCustomizers(any(ProxyCustomizer.class));
     }
 
     @Test
-    public void shouldSetTimeoutsOnRestTemplate() {
+    public void shouldSetTimeoutsOnAuditRestTemplate() {
         // given
-        int readTimeout = 1234;
-        int connectTimeout = 4321;
-        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(), false, null, null, null, readTimeout, connectTimeout);
+        final int readTimeout = 1234;
+        final int connectTimeout = 4321;
+
+        restTemplateProperties.getAudit().setReadMs(readTimeout);
+        restTemplateProperties.getAudit().setConnectMs(connectTimeout);
+        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
+                false, null, null, null, restTemplateProperties);
 
         // when
-        RestTemplate restTemplate = springConfig.createRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
+        RestTemplate restTemplate = springConfig.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
+
+        // then
+        verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
+        verify(mockRestTemplateBuilder).setConnectTimeout(connectTimeout);
+
+        assertThat(restTemplate).isEqualTo(mockRestTemplate);
+    }
+
+    @Test
+    public void shouldSetTimeoutsOnHmrcRestTemplate() {
+        // given
+        final int readTimeout = 1234;
+        final int connectTimeout = 4321;
+
+        restTemplateProperties.getHmrc().setReadMs(readTimeout);
+        restTemplateProperties.getHmrc().setConnectMs(connectTimeout);
+        SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
+                false, null, null, null, restTemplateProperties);
+
+        // when
+        RestTemplate restTemplate = springConfig.hmrcRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
 
         // then
         verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
