@@ -1,24 +1,39 @@
 package uk.gov.digital.ho.pttg.audit;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.pttg.api.RequestData;
+import uk.gov.digital.ho.pttg.application.ProxyCustomizer;
+import uk.gov.digital.ho.pttg.hmrc.AccessCodeHmrc;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,11 +47,18 @@ public class AuditClientTest {
 
     private static TimeZone defaultTimeZone;
 
-    @Mock private RestTemplate mockRestTemplate;
-    @Mock private RequestData mockRequestData;
     @Captor private ArgumentCaptor<HttpEntity> captorHttpEntity;
+    private static final int MAX_RETRY_ATTEMPTS = 5;
+    private static final int RETRY_DELAY = 1;
 
-    private AuditClient auditClient;
+    @Mock
+    private RequestData mockRequestData;
+    @Mock
+    private RestTemplate mockRestTemplate;
+    @Mock
+    private Appender<ILoggingEvent> mockAppender;
+
+    private AuditClient client;
 
     @BeforeClass
     public static void beforeAllTests() {
@@ -50,25 +72,42 @@ public class AuditClientTest {
     }
 
     @Before
-    public void setup() {
-        auditClient = new AuditClient(Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC")),
-                                        mockRestTemplate,
-                                        mockRequestData,
-                                        "some endpoint");
+    public void setup(){
+        final Clock clock = Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC"));
+        client = new AuditClient(clock, mockRestTemplate, mockRequestData, "some endpoint",
+                MAX_RETRY_ATTEMPTS, RETRY_DELAY);
+    }
+
+    @Test
+    public void dispatchAuditableDataShouldRetryOnHttpError() {
+        when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        try {
+            client.add(AuditEventType.HMRC_ACCESS_CODE_REQUEST);
+        }
+        catch (HttpServerErrorException e){
+            // Ignore expected exception.
+        }
+
+        verify(mockRestTemplate, times(MAX_RETRY_ATTEMPTS)).exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
     }
 
     @Test
     public void shouldUseCollaborators() {
-        auditClient.add(HMRC_ACCESS_CODE_REQUEST);
+        when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        client.add(HMRC_ACCESS_CODE_REQUEST);
 
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), any(HttpEntity.class), eq(Void.class));
     }
 
     @Test
     public void shouldSetHeaders() {
-
+        when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(mockRequestData.auditBasicAuth()).thenReturn("some basic auth header value");
-        auditClient.add(HMRC_ACCESS_CODE_REQUEST);
+        client.add(HMRC_ACCESS_CODE_REQUEST);
 
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), captorHttpEntity.capture(), eq(Void.class));
 
@@ -85,14 +124,15 @@ public class AuditClientTest {
 
     @Test
     public void shouldSetAuditableData() {
-
+        when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(mockRequestData.sessionId()).thenReturn("some session id");
         when(mockRequestData.correlationId()).thenReturn("some correlation id");
         when(mockRequestData.userId()).thenReturn("some user id");
         when(mockRequestData.deploymentName()).thenReturn("some deployment name");
         when(mockRequestData.deploymentNamespace()).thenReturn("some deployment namespace");
 
-        auditClient.add(HMRC_ACCESS_CODE_REQUEST);
+        client.add(HMRC_ACCESS_CODE_REQUEST);
 
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), captorHttpEntity.capture(), eq(Void.class));
 
@@ -106,6 +146,26 @@ public class AuditClientTest {
         assertThat(auditableData.getDeploymentName()).isEqualTo("some deployment name");
         assertThat(auditableData.getDeploymentNamespace()).isEqualTo("some deployment namespace");
         assertThat(auditableData.getEventType()).isEqualTo(HMRC_ACCESS_CODE_REQUEST);
-        assertThat(auditableData.getData()).isEqualTo("{}");
+
     }
+
+    @Test
+    public void shouldLogFailure() {
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(AuditClient.class);
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.addAppender(mockAppender);
+
+        when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        client.add(HMRC_ACCESS_CODE_REQUEST);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().startsWith("Failed to audit") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+        }));
+    }
+
 }
