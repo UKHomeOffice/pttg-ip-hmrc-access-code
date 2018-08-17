@@ -8,8 +8,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -26,6 +31,7 @@ public class SpringConfigurationTest {
     private RestTemplate mockRestTemplate;
 
     private TimeoutProperties restTemplateProperties;
+    private final List<String> anySSLProtocols = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -33,6 +39,7 @@ public class SpringConfigurationTest {
         when(mockRestTemplateBuilder.additionalMessageConverters(any(HttpMessageConverter.class))).thenReturn(mockRestTemplateBuilder);
         when(mockRestTemplateBuilder.setReadTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
         when(mockRestTemplateBuilder.setConnectTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
+        when(mockRestTemplateBuilder.requestFactory(any(Supplier.class))).thenReturn(mockRestTemplateBuilder);
 
         when(mockRestTemplateBuilder.build()).thenReturn(mockRestTemplate);
 
@@ -45,7 +52,7 @@ public class SpringConfigurationTest {
     public void shouldUseCustomizerWhenProxyEnabled() {
 
         SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
-                true, "", "host", 1234, restTemplateProperties);
+                true, "", "host", 1234, restTemplateProperties, anySSLProtocols);
         config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder).additionalCustomizers(any(ProxyCustomizer.class));
     }
@@ -54,7 +61,7 @@ public class SpringConfigurationTest {
     public void shouldNotUseCustomizerByWhenProxyDisabled() {
 
         SpringConfiguration config = new SpringConfiguration(new ObjectMapper(),
-                false, null, null, null, restTemplateProperties);
+                false, null, null, null, restTemplateProperties, anySSLProtocols);
         config.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
         verify(mockRestTemplateBuilder, never()).additionalCustomizers(any(ProxyCustomizer.class));
     }
@@ -68,7 +75,7 @@ public class SpringConfigurationTest {
         restTemplateProperties.getAudit().setReadMs(readTimeout);
         restTemplateProperties.getAudit().setConnectMs(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
-                false, null, null, null, restTemplateProperties);
+                false, null, null, null, restTemplateProperties, anySSLProtocols);
 
         // when
         RestTemplate restTemplate = springConfig.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
@@ -89,10 +96,11 @@ public class SpringConfigurationTest {
         restTemplateProperties.getHmrc().setReadMs(readTimeout);
         restTemplateProperties.getHmrc().setConnectMs(connectTimeout);
         SpringConfiguration springConfig = new SpringConfiguration(new ObjectMapper(),
-                false, null, null, null, restTemplateProperties);
+                false, null, null, null, restTemplateProperties, anySSLProtocols);
 
         // when
-        RestTemplate restTemplate = springConfig.hmrcRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
+        final ClientHttpRequestFactory clientHttpRequestFactory = springConfig.createClientHttpRequestFactory(springConfig.createHttpClientBuilder());
+        RestTemplate restTemplate = springConfig.hmrcRestTemplate(mockRestTemplateBuilder, new ObjectMapper(), clientHttpRequestFactory);
 
         // then
         verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
