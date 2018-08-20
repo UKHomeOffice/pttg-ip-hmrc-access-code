@@ -22,6 +22,7 @@ import uk.gov.digital.ho.pttg.api.RequestData;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -49,7 +50,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
         this.proxyPort = proxyPort;
         this.timeoutProperties = timeoutProperties;
         this.supportedSslProtocols = supportedSslProtocols.toArray(new String[]{});
-        
+
         initialiseObjectMapper(objectMapper);
     }
 
@@ -93,10 +94,21 @@ public class SpringConfiguration implements WebMvcConfigurer {
 
     @Bean
     public HttpClientBuilder createHttpClientBuilder() {
+        assertSslVersion();
         final SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(SSLContexts.createDefault(), supportedSslProtocols, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier());
         return HttpClientBuilder.create().setSSLSocketFactory(sslSocketFactory);
     }
 
+    private void assertSslVersion() {
+        if (supportedSslProtocols.length == 0 || !Arrays.stream(supportedSslProtocols).allMatch(x -> x.equals("TLSv1.2"))) {
+            String forbiddenSslVersion = Arrays.stream(supportedSslProtocols)
+                    .filter(x -> !x.equals("TLSv1.2"))
+                    .findFirst()
+                    .orElse("None");
+            String errorMsg = String.format("Invalid TLS/SSL version: %s - only TLSv1.2 permitted.", forbiddenSslVersion);
+            throw new IllegalStateException(errorMsg);
+        }
+    }
 
     private RestTemplateBuilder initaliseRestTemplateBuilder(RestTemplateBuilder restTemplateBuilder, ObjectMapper mapper) {
         RestTemplateBuilder builder = restTemplateBuilder;
