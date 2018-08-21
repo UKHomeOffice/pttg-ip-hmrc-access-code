@@ -7,7 +7,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.pttg.api.RequestData;
 import uk.gov.digital.ho.pttg.application.RetryTemplateBuilder;
@@ -15,11 +14,13 @@ import uk.gov.digital.ho.pttg.application.RetryTemplateBuilder;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static uk.gov.digital.ho.pttg.application.LogEvent.*;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_ACCESS_CODE_AUDIT_FAILURE;
 
 @Component
 @Slf4j
@@ -52,20 +53,21 @@ public class AuditClient {
   public void add(AuditEventType eventType) {
 
         AuditableData auditableData = generateAuditableData(eventType);
-        log.debug("POST data for correlation id {} to audit service {}", requestData.correlationId(), auditableData);
+        log.debug("POST data to audit service {}", auditableData);
         dispatchAuditableData(auditableData);
-        log.debug("data POSTed for correlation id {} to audit service", requestData.correlationId());
+        log.debug("data POSTed to audit service");
     }
 
-    public void dispatchAuditableData(AuditableData auditableData) {
+    void dispatchAuditableData(AuditableData auditableData) {
         try {
             retryTemplate.execute(context -> {
-                log.debug("Audit attempt {} of {}", context.getRetryCount() + 1, maxCallAttempts);
+                if (context.getRetryCount() > 0) {
+                    log.info("Retrying audit attempt {} of {}", context.getRetryCount() + 1, maxCallAttempts, value(EVENT, auditableData.getEventType()));
+                }
                 return restTemplate.exchange(auditEndpoint, POST, toEntity(auditableData), Void.class);
             });
-        } catch (HttpServerErrorException e) {
-            log.error("Failed to audit after retries due to {}", e.getMessage(), value(EVENT, HMRC_ACCESS_CODE_AUDIT_FAILURE));
-            //throw e;
+        } catch (Exception e) {
+            log.error("Failed to audit {} after retries",auditableData.getEventType(), value(EVENT, HMRC_ACCESS_CODE_AUDIT_FAILURE));
         }
     }
 
