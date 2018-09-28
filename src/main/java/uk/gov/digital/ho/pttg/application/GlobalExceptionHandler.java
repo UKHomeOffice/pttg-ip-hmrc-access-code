@@ -40,7 +40,7 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = ApplicationExceptions.HmrcUnauthorisedException.class)
     public ResponseEntity handle(ApplicationExceptions.HmrcUnauthorisedException e) {
-        log.error("HmrcUnauthorisedException: {}", e.getMessage(), value(EVENT, HMRC_ACCESS_CODE_AUTHENTICATION_ERROR));
+        log.info("HmrcUnauthorisedException: {}", e.getMessage(), value(EVENT, HMRC_ACCESS_CODE_AUTHENTICATION_ERROR));
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
