@@ -52,15 +52,13 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = HttpServerErrorException.class)
     public ResponseEntity handle(HttpServerErrorException e) {
-        log.error("HttpServerErrorException: {}", e.getMessage(), value(EVENT, HMRC_ACCESS_CODE_RESPONSE_ERROR));
-        log.error("Error response body: {}", e.getResponseBodyAsString());
+        log.error("HttpServerErrorException: {}\nError response body: {}", e.getMessage(), e.getResponseBodyAsString(), value(EVENT, HMRC_ACCESS_CODE_RESPONSE_ERROR));
         return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
     @ExceptionHandler(value = RestClientException.class)
     public ResponseEntity handle(RestClientException e) {
-        log.error("Error: {}", e.getMessage());
-        log.error("RestClientException:", e, value(EVENT, HMRC_ACCESS_CODE_RESPONSE_ERROR));
+        log.error("RestClientException: {}", e.getMessage(), value(EVENT, HMRC_ACCESS_CODE_RESPONSE_ERROR));
         return new ResponseEntity<>(e.getMessage(), INTERNAL_SERVER_ERROR);
     }
 
