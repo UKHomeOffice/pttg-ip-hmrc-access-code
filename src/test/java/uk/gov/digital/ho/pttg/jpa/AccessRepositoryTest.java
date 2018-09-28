@@ -27,7 +27,7 @@ public class AccessRepositoryTest {
 
     @Test
     public void shouldOnlyEverBeOneRow() {
-        repository.save(new AccessCodeJpa(LocalDateTime.now().plusMinutes(3), ACCESS_CODE));
+        repository.save(new AccessCodeJpa(LocalDateTime.now().plusMinutes(3), LocalDateTime.now().plusMinutes(1), ACCESS_CODE));
         assertThat(repository.findAll()).hasSize(1);
         assertThat(repository.findById(ACCESS_ID).get()).hasFieldOrPropertyWithValue("code",ACCESS_CODE);
     }

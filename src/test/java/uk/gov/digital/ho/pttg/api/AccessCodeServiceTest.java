@@ -14,8 +14,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.PropertyAccessor;
-import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.digital.ho.pttg.application.ApplicationExceptions;
 import uk.gov.digital.ho.pttg.application.TotpGenerator;
 import uk.gov.digital.ho.pttg.audit.AuditClient;
@@ -28,7 +27,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,12 +38,12 @@ import static uk.gov.digital.ho.pttg.jpa.AccessRepository.ACCESS_ID;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessCodeServiceTest {
 
-    private static final String TOTP_CODE = "IAGVQR33EVGGSZYH";
     private static final int EXPIRES_IN = 3600000;
     private static final String ACCESS_CODE = "access_code";
     private static final String EXISTING_ACCESS_CODE = "existing_access_code";
-    private static final int REFRESH_INTERVAL = 360000;
     private static final LocalDateTime JAN_14_2014_19_30 = LocalDateTime.of(2014, Month.JANUARY, 14, 19, 30);
+    private static final LocalDateTime JAN_14_2014_16_30 = LocalDateTime.of(2014, Month.JANUARY, 14, 16, 30);
+    private static final int REFRESH_AT_MINUTE = 99;
 
     @Mock private AccessRepository mockRepo;
     @Mock private HmrcClient mockHmrcClient;
@@ -63,19 +61,15 @@ public class AccessCodeServiceTest {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AccessCodeService.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
-        service = new AccessCodeService(mockHmrcClient, REFRESH_INTERVAL, mockRepo, mockAuditClient, mockTotpGenerator);
+        service = new AccessCodeService(mockHmrcClient, REFRESH_AT_MINUTE, mockRepo, mockAuditClient, mockTotpGenerator);
 
     }
 
     @Test
     public void shouldPersistAccessCode() throws InvalidKeyException, NoSuchAlgorithmException {
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
-
-        adjustAccessCodeCreationDateToAllowRefresh(existingAccessCodeRecord);
 
         when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
-        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         service.refreshAccessCode();
 
@@ -84,25 +78,11 @@ public class AccessCodeServiceTest {
 
         assertThat(arg.getCode()).isEqualTo(ACCESS_CODE);
         assertThat(arg.getExpiry()).isAfter(JAN_14_2014_19_30);
-        assertThat(arg.getUpdatedDate()).isAfter(existingAccessCodeRecord.getUpdatedDate());
-    }
-
-    @Test
-    public void shouldNotPersistAccessCodeIfRecentlyReplaced(){
-
-        AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
-
-        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
-
-        service.refreshAccessCode();
-
-        verify(mockRepo, never()).save(any(AccessCodeJpa.class));
-        verifyZeroInteractions(mockHmrcClient);
     }
 
     @Test
     public void shouldRetrieveAccessCodeWithoutTriggeringRefresh(){
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(LocalDateTime.now().plusMinutes(30), EXISTING_ACCESS_CODE);
+        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(LocalDateTime.now().plusMinutes(30), LocalDateTime.now().minusMinutes(30), EXISTING_ACCESS_CODE);
         when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
 
         assertThat(service.getAccessCode()).hasFieldOrPropertyWithValue("code", EXISTING_ACCESS_CODE);
@@ -114,7 +94,7 @@ public class AccessCodeServiceTest {
     public void shouldRetrieveAccessCodeTriggeringRefreshAsExpired() throws InvalidKeyException, NoSuchAlgorithmException {
 
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
+        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, JAN_14_2014_16_30, EXISTING_ACCESS_CODE);
 
         when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
         when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
@@ -126,16 +106,29 @@ public class AccessCodeServiceTest {
 
         assertThat(arg.getCode()).isEqualTo(ACCESS_CODE);
         assertThat(arg.getExpiry()).isAfter(JAN_14_2014_19_30);
+        assertThat(arg.getRefreshTime()).isEqualTo(LocalDateTime.MAX);
         assertThat(arg.getUpdatedDate()).isAfter(existingAccessCodeRecord.getUpdatedDate());
     }
 
     @Test
-    public void shouldAudit() throws InvalidKeyException, NoSuchAlgorithmException {
-        AccessCodeJpa mockAccessCodeJpa = mock(AccessCodeJpa.class);
-        when(mockAccessCodeJpa.getUpdatedDate()).thenReturn(LocalDateTime.now().minusDays(1));
-
+    public void shouldApplyRefreshAtMinuteToAccessCode() throws InvalidKeyException, NoSuchAlgorithmException {
+        ReflectionTestUtils.setField(service, "refreshAtMinute", 10);
+        when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
         when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
-        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(mockAccessCodeJpa));
+
+        service.refreshAccessCode();
+
+        verify(mockRepo).save(captorAccessCodeJpa.capture());
+        AccessCodeJpa savedAccessCode = captorAccessCodeJpa.getValue();
+
+        assertThat(savedAccessCode.getRefreshTime().getMinute()).isEqualTo(10);
+
+        ReflectionTestUtils.setField(service, "refreshAtMinute", REFRESH_AT_MINUTE);
+    }
+
+    @Test
+    public void shouldAudit() throws InvalidKeyException, NoSuchAlgorithmException {
+        when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
         service.refreshAccessCode();
 
@@ -145,11 +138,7 @@ public class AccessCodeServiceTest {
 
     @Test
     public void shouldLogAccessCodeRefreshed() throws InvalidKeyException, NoSuchAlgorithmException {
-        AccessCodeJpa mockAccessCodeJpa = mock(AccessCodeJpa.class);
-        when(mockAccessCodeJpa.getUpdatedDate()).thenReturn(LocalDateTime.now().minusDays(1));
-
         when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
-        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(mockAccessCodeJpa));
         when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
 
         service.refreshAccessCode();
@@ -164,13 +153,6 @@ public class AccessCodeServiceTest {
 
     @Test
     public void shouldLogTOTPFailure() throws InvalidKeyException, NoSuchAlgorithmException {
-
-
-        final AccessCodeJpa existingAccessCodeRecord = new AccessCodeJpa(JAN_14_2014_19_30, EXISTING_ACCESS_CODE);
-
-        adjustAccessCodeCreationDateToAllowRefresh(existingAccessCodeRecord);
-
-        when(mockRepo.findById(ACCESS_ID)).thenReturn(Optional.of(existingAccessCodeRecord));
         when(mockTotpGenerator.getTotpCode()).thenThrow(new InvalidKeyException());
 
         assertThatThrownBy(() -> service.refreshAccessCode()).isInstanceOf(ApplicationExceptions.HmrcAccessCodeServiceRuntimeException.class);;
@@ -183,11 +165,4 @@ public class AccessCodeServiceTest {
         }));
     }
 
-    /* refresh will only occur if the access code hasn't been recently refreshed
-       recently = half of the refresh interval,  if interval = 1hr then refresh request will be ignored if within 30 mins of previous refresh
-     */
-    private void adjustAccessCodeCreationDateToAllowRefresh(AccessCodeJpa existingAccessCodeRecord) {
-        PropertyAccessor myAccessor = PropertyAccessorFactory.forDirectFieldAccess(existingAccessCodeRecord);
-        myAccessor.setPropertyValue("updatedDate", LocalDateTime.now().minus(REFRESH_INTERVAL, ChronoUnit.MILLIS));
-    }
 }
