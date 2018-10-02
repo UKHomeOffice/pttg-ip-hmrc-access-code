@@ -31,7 +31,7 @@ class AccessCodeService {
     private final AccessRepository repository;
     private final AuditClient auditClient;
     private final TotpGenerator totpGenerator;
-    private final static int NO_REFRESH = 99;
+    private static final int NO_REFRESH = 99;
 
     AccessCodeService(HmrcClient hmrcClient,
                       @Value("${hmrc.access.code.refresh.at.minute:99}") int refreshAtMinute,
