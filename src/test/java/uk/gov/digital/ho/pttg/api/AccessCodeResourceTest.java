@@ -14,6 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.digital.ho.pttg.application.LogEvent;
 
 
 import java.io.IOException;
@@ -74,6 +75,12 @@ public class AccessCodeResourceTest {
         verify(mockAccessCodeService).refreshAccessCode();
     }
 
+    @Test
+    public void shouldUseCollaborators_report() {
+        resource.report("some access code");
+
+        verify(mockAccessCodeService).reportUnauthorizedAccessCode("some access code");
+    }
 
     @Test
     public void shouldLogWhenGetAccessCodeRequestReceived() {
@@ -116,6 +123,30 @@ public class AccessCodeResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("AccessCodeService refreshed access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id");
+        }));
+    }
+
+    @Test
+    public void shouldLogWhenReportRequestReceived() {
+        resource.report("some access code");
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("Calling AccessCodeService to report unauthorized access code") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
+                    loggingEvent.getArgumentArray()[0].toString().equalsIgnoreCase(LogEvent.HMRC_ACCESS_CODE_REPORTED.toString());
+        }));
+    }
+
+    @Test
+    public void shouldLogReportedResponseSuccess() {
+        resource.report("some access code");
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("AccessCodeService reported unauthorized access code") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
+                    loggingEvent.getArgumentArray()[0].toString().equalsIgnoreCase(LogEvent.HMRC_ACCESS_CODE_REPORTED_RESPONSE_SUCCESS.toString());
         }));
     }
 

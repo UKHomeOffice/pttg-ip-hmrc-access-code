@@ -27,6 +27,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,7 +108,7 @@ public class AccessCodeServiceTest {
 
         assertThat(arg.getCode()).isEqualTo(ACCESS_CODE);
         assertThat(arg.getExpiry()).isAfter(JAN_14_2014_19_30);
-        assertThat(arg.getRefreshTime()).isEqualTo(LocalDateTime.MAX);
+        assertThat(arg.getRefreshTime()).isAfter(JAN_14_2014_19_30);
         assertThat(arg.getUpdatedDate()).isAfter(existingAccessCodeRecord.getUpdatedDate());
     }
 
@@ -155,7 +157,7 @@ public class AccessCodeServiceTest {
     public void shouldLogTOTPFailure() throws InvalidKeyException, NoSuchAlgorithmException {
         when(mockTotpGenerator.getTotpCode()).thenThrow(new InvalidKeyException());
 
-        assertThatThrownBy(() -> service.refreshAccessCode()).isInstanceOf(ApplicationExceptions.HmrcAccessCodeServiceRuntimeException.class);;
+        assertThatThrownBy(() -> service.refreshAccessCode()).isInstanceOf(ApplicationExceptions.HmrcAccessCodeServiceRuntimeException.class);
 
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
@@ -163,6 +165,30 @@ public class AccessCodeServiceTest {
             return loggingEvent.getFormattedMessage().equals("Problem generating TOTP code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
         }));
+    }
+
+    @Test
+    public void shouldNotRefreshReportedAccessCodeIfNotStored() {
+        when(mockRepo.findByCode(anyString())).thenReturn(new ArrayList<>());
+
+        service.reportUnauthorizedAccessCode("some access code");
+
+        verifyZeroInteractions(mockHmrcClient);
+        verify(mockRepo, never()).save(any(AccessCodeJpa.class));
+    }
+
+    @Test
+    public void shouldRefreshReportedAccessCodeIfStored() throws InvalidKeyException, NoSuchAlgorithmException {
+        String code = "unauthorized access code";
+        AccessCodeJpa storedAccessCode = new AccessCodeJpa(LocalDateTime.MAX, LocalDateTime.MAX, code);
+        when(mockRepo.findByCode(code)).thenReturn(Arrays.asList(storedAccessCode));
+        when(mockTotpGenerator.getTotpCode()).thenReturn("access-code");
+        when(mockHmrcClient.getAccessCodeFromHmrc(anyString())).thenReturn(new AccessCodeHmrc(ACCESS_CODE, EXPIRES_IN, "refresh_token"));
+
+        service.reportUnauthorizedAccessCode(code);
+
+        verify(mockHmrcClient).getAccessCodeFromHmrc(anyString());
+        verify(mockRepo).save(any(AccessCodeJpa.class));
     }
 
 }

@@ -14,6 +14,7 @@ import uk.gov.digital.ho.pttg.jpa.AccessRepository;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
@@ -61,6 +62,14 @@ class AccessCodeService {
         log.info("Access Code refreshed", value(EVENT, HMRC_ACCESS_CODE_REFRESHED));
     }
 
+    void reportUnauthorizedAccessCode(String accessCode) {
+        List<AccessCodeJpa> storedAccessCode = repository.findByCode(accessCode);
+
+        if (storedAccessCode.size() > 0) {
+            refreshAccessCode();
+        }
+    }
+
     private AccessCodeJpa generateAccessCode() {
 
         auditClient.add(HMRC_ACCESS_CODE_REQUEST);
@@ -103,7 +112,7 @@ class AccessCodeService {
 
     private LocalDateTime calculateAccessCodeRefreshTime(int refreshAtMinute) {
         if (refreshAtMinute == NO_REFRESH) {
-            return LocalDateTime.MAX;
+            return LocalDateTime.now().plusDays(1L);
         }
 
         LocalDateTime currentTime = LocalDateTime.now();
@@ -113,4 +122,5 @@ class AccessCodeService {
             return currentTime.plusHours(1).withMinute(refreshAtMinute);
         }
     }
+
 }

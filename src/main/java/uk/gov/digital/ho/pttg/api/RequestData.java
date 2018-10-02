@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
-@Component
 @Slf4j
 public class RequestData implements HandlerInterceptor {
 
