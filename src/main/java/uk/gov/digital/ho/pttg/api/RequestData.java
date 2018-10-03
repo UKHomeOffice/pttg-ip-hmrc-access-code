@@ -16,9 +16,9 @@ import java.util.Base64;
 @Slf4j
 public class RequestData implements HandlerInterceptor {
 
-    static final String SESSION_ID_HEADER = "x-session-id";
-    static final String CORRELATION_ID_HEADER = "x-correlation-id";
-    static final String USER_ID_HEADER = "x-auth-userid";
+    public static final String SESSION_ID_HEADER = "x-session-id";
+    public static final String CORRELATION_ID_HEADER = "x-correlation-id";
+    public static final String USER_ID_HEADER = "x-auth-userid";
 
     @Value("${auditing.deployment.name}") private String deploymentName;
     @Value("${auditing.deployment.namespace}") private String deploymentNamespace;
