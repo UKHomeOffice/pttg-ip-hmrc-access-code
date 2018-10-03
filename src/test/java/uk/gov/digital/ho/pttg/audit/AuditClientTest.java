@@ -107,6 +107,10 @@ public class AuditClientTest {
         when(mockRestTemplate.exchange(eq("some endpoint"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(mockRequestData.auditBasicAuth()).thenReturn("some basic auth header value");
+        when(mockRequestData.sessionId()).thenReturn("some session id");
+        when(mockRequestData.correlationId()).thenReturn("some correlation id");
+        when(mockRequestData.userId()).thenReturn("some user id");
+
         client.add(HMRC_ACCESS_CODE_REQUEST);
 
         verify(mockRestTemplate).exchange(eq("some endpoint"), eq(POST), captorHttpEntity.capture(), eq(Void.class));
@@ -120,6 +124,10 @@ public class AuditClientTest {
         assertThat(headers.containsKey("Content-Type")).isTrue();
         assertThat(requireNonNull(headers.get("Content-Type")).size()).isGreaterThan(0);
         assertThat(requireNonNull(headers.get("Content-Type")).get(0)).isEqualTo(APPLICATION_JSON_VALUE);
+
+        assertThat(headers.get(RequestData.SESSION_ID_HEADER).get(0)).isEqualTo("some session id");
+        assertThat(headers.get(RequestData.CORRELATION_ID_HEADER).get(0)).isEqualTo("some correlation id");
+        assertThat(headers.get(RequestData.USER_ID_HEADER).get(0)).isEqualTo("some user id");
     }
 
     @Test
