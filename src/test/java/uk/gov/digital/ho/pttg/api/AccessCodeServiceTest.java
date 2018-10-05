@@ -124,8 +124,6 @@ public class AccessCodeServiceTest {
         AccessCodeJpa savedAccessCode = captorAccessCodeJpa.getValue();
 
         assertThat(savedAccessCode.getRefreshTime().getMinute()).isEqualTo(10);
-
-        ReflectionTestUtils.setField(service, "refreshAtMinute", REFRESH_AT_MINUTE);
     }
 
     @Test
