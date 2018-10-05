@@ -19,12 +19,15 @@ public class AccessCodeJpa {
 
     private LocalDateTime expiry;
 
+    private LocalDateTime refreshTime;
+
     private LocalDateTime updatedDate = LocalDateTime.now();
 
     private String code;
 
-    public AccessCodeJpa(LocalDateTime expiry, String code) {
+    public AccessCodeJpa(LocalDateTime expiry, LocalDateTime refreshTime, String code) {
         this.expiry = expiry;
+        this.refreshTime = refreshTime;
         this.code = code;
     }
 

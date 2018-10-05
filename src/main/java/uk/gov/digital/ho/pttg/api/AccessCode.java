@@ -18,4 +18,8 @@ class AccessCode {
     @JsonProperty(value = "expiry")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private final LocalDateTime expiry;
+
+    @JsonProperty(value = "refreshTime")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private final LocalDateTime refreshTime;
 }

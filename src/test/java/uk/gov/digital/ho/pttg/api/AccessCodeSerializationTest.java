@@ -15,15 +15,16 @@ public class AccessCodeSerializationTest {
 
     private ObjectMapper mapper = new ObjectMapper();
     private LocalDateTime JAN_14_2014_19_30 = LocalDateTime.of(2014, Month.JANUARY, 14, 19, 30);
+    private LocalDateTime JAN_14_2014_16_30 = LocalDateTime.of(2014, Month.JANUARY, 14, 16, 30);
 
 
     @Test
     public void shouldMarshall() throws JsonProcessingException, JSONException {
         SpringConfiguration.initialiseObjectMapper(mapper);
 
-        String expectedJson = "{\"code\": \"some code\", \"expiry\": \"2014-01-14T19:30:00\"}";
+        String expectedJson = "{\"code\": \"some code\", \"expiry\": \"2014-01-14T19:30:00\", \"refreshTime\": \"2014-01-14T16:30:00\"}";
 
-        AccessCode accessCode = new AccessCode("some code", JAN_14_2014_19_30);
+        AccessCode accessCode = new AccessCode("some code", JAN_14_2014_19_30, JAN_14_2014_16_30);
 
         String jsonFromObject = mapper.writeValueAsString(accessCode);
 

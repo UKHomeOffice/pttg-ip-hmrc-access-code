@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
@@ -46,5 +43,16 @@ public class AccessCodeResource {
         accessCodeService.refreshAccessCode();
 
         log.info("AccessCodeService refreshed access code", value(EVENT, HMRC_ACCESS_CODE_REFRESH_RESPONSE_SUCCESS));
+    }
+
+    @PostMapping(path = "/access/{accessCode}/report")
+    @ResponseStatus(value = HttpStatus.OK)
+    public void report(@PathVariable String accessCode) {
+
+        log.info("Calling AccessCodeService to report unauthorized access code", value(EVENT, HMRC_ACCESS_CODE_REPORTED));
+
+        accessCodeService.reportUnauthorizedAccessCode(accessCode);
+
+        log.info("AccessCodeService reported unauthorized access code", value(EVENT, HMRC_ACCESS_CODE_REPORTED_RESPONSE_SUCCESS));
     }
 }
