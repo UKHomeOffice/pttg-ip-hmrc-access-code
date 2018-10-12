@@ -31,7 +31,7 @@ public class ProxyCustomizer implements RestTemplateCustomizer {
     @Override
     public void customize(RestTemplate restTemplate) {
 
-        log.warn("Using proxy {}:{} for {}", proxyHost, proxyPort, hostToProxy, value(EVENT, HMRC_PROXY_ENABLED));
+        log.info("Using proxy {}:{} for {}", proxyHost, proxyPort, hostToProxy, value(EVENT, HMRC_PROXY_ENABLED));
 
         HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
         HttpClient httpClient = HttpClientBuilder.create().setRoutePlanner(new HMRCAccessProxyRoutePlanner(proxy, hostToProxy)).build();
