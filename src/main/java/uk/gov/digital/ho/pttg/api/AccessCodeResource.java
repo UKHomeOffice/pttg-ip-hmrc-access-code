@@ -37,7 +37,7 @@ public class AccessCodeResource {
 
         log.info("AccessCodeService returned access code",
                 value(EVENT, HMRC_ACCESS_CODE_RESPONSE_SUCCESS),
-                value("request_duration", duration))
+                value("request_duration_ms", duration))
         ;
 
         return ResponseEntity.ok(accessCode);
@@ -57,7 +57,7 @@ public class AccessCodeResource {
 
         log.info("AccessCodeService refreshed access code",
                 value(EVENT, HMRC_ACCESS_CODE_REFRESH_RESPONSE_SUCCESS),
-                value("request_duration", duration))
+                value("request_duration_ms", duration))
         ;
     }
 
@@ -75,7 +75,7 @@ public class AccessCodeResource {
 
         log.info("AccessCodeService reported unauthorized access code",
                 value(EVENT, HMRC_ACCESS_CODE_REPORTED_RESPONSE_SUCCESS),
-                value("request_duration", duration));
+                value("request_duration_ms", duration));
     }
 
     private long getDuration(long whenRequestWasSent) {

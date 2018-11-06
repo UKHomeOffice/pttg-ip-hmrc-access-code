@@ -101,7 +101,7 @@ public class AccessCodeResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("AccessCodeService returned access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -124,7 +124,7 @@ public class AccessCodeResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("AccessCodeService refreshed access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -149,7 +149,7 @@ public class AccessCodeResourceTest {
             return loggingEvent.getFormattedMessage().equals("AccessCodeService reported unauthorized access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
                     loggingEvent.getArgumentArray()[0].toString().equalsIgnoreCase(LogEvent.HMRC_ACCESS_CODE_REPORTED_RESPONSE_SUCCESS.toString()) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
