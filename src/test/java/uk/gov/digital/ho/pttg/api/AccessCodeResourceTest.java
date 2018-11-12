@@ -27,14 +27,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessCodeResourceTest {
 
-    @Mock
-    private AccessCode stubAccessCode;
-
-    @Mock
-    private AccessCodeService mockAccessCodeService;
-
-    @Mock
-    private Appender<ILoggingEvent> mockAppender;
+    @Mock private AccessCode stubAccessCode;
+    @Mock private AccessCodeService mockAccessCodeService;
+    @Mock private RequestData mockRequestHeaderData;
+    @Mock private Appender<ILoggingEvent> mockAppender;
 
     private AccessCodeResource resource;
 
@@ -43,7 +39,7 @@ public class AccessCodeResourceTest {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AccessCodeResource.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
-        resource = new AccessCodeResource(mockAccessCodeService);
+        resource = new AccessCodeResource(mockAccessCodeService, mockRequestHeaderData);
     }
 
     @Test
@@ -101,7 +97,7 @@ public class AccessCodeResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("AccessCodeService returned access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -124,7 +120,7 @@ public class AccessCodeResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("AccessCodeService refreshed access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -149,7 +145,7 @@ public class AccessCodeResourceTest {
             return loggingEvent.getFormattedMessage().equals("AccessCodeService reported unauthorized access code") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
                     loggingEvent.getArgumentArray()[0].toString().equalsIgnoreCase(LogEvent.HMRC_ACCESS_CODE_REPORTED_RESPONSE_SUCCESS.toString()) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
