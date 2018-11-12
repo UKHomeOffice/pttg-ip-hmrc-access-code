@@ -73,7 +73,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(REQUEST_START_TIMESTAMP, Long.toString(requestStartTimeStamp));
     }
 
-    Long calculateRequestDuration() {
+    public Long calculateRequestDuration() {
         Long timeStamp = Instant.now().toEpochMilli();
         return timeStamp - Long.parseLong(MDC.get(REQUEST_START_TIMESTAMP));
     }

@@ -14,7 +14,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
+import uk.gov.digital.ho.pttg.api.RequestData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -24,16 +26,17 @@ import static org.springframework.http.HttpStatus.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalExceptionHandlerTest {
 
-
-    private GlobalExceptionHandler handler = new GlobalExceptionHandler();
-    @Mock
-    private Appender<ILoggingEvent> mockAppender;
+    private GlobalExceptionHandler handler;
+    @Mock private Appender<ILoggingEvent> mockAppender;
+    @Mock private RequestData mockRequestHeaderData;
 
     @Before
     public void setup() {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(GlobalExceptionHandler.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
+
+        handler = new GlobalExceptionHandler(mockRequestHeaderData);
     }
 
     @Test
@@ -57,7 +60,8 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Responding with 500 after handling any message") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -82,7 +86,8 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Responding with 500 after handling any message") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -109,6 +114,7 @@ public class GlobalExceptionHandlerTest {
 
             return loggingEvent.getFormattedMessage().equals("HmrcUnauthorisedException: any message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms") &&
                     loggingEvent.getLevel().equals(Level.INFO);
         }));
     }
@@ -136,7 +142,8 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Fault Detected:") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -159,7 +166,8 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Responding with 400 after handling any message") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -185,7 +193,8 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Received 403 Forbidden from a request to HMRC. This was from the proxy and not HMRC.") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[0]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -211,7 +220,9 @@ public class GlobalExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("RestClientException: any message") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
+
 }
