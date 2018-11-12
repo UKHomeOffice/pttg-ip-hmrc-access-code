@@ -27,14 +27,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessCodeResourceTest {
 
-    @Mock
-    private AccessCode stubAccessCode;
-
-    @Mock
-    private AccessCodeService mockAccessCodeService;
-
-    @Mock
-    private Appender<ILoggingEvent> mockAppender;
+    @Mock private AccessCode stubAccessCode;
+    @Mock private AccessCodeService mockAccessCodeService;
+    @Mock private RequestData mockRequestHeaderData;
+    @Mock private Appender<ILoggingEvent> mockAppender;
 
     private AccessCodeResource resource;
 
@@ -43,7 +39,7 @@ public class AccessCodeResourceTest {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AccessCodeResource.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
-        resource = new AccessCodeResource(mockAccessCodeService);
+        resource = new AccessCodeResource(mockAccessCodeService, mockRequestHeaderData);
     }
 
     @Test
