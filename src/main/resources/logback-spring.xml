@@ -18,6 +18,17 @@
         <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
+                <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
+                    <pattern>
+                        {
+                        "timestamp" : "%date{\"yyyy-MM-dd'T'HH:mm:ss,SSSXXX\", UTC}",
+                        "thread"    : "%thread",
+                        "subsystem" : "${appName}",
+                        "logger"    : "%logger{50}",
+                        "exception" : "%exception"
+                        }
+                    </pattern>
+                </provider>
             </encoder>
         </appender>
     </springProfile>
