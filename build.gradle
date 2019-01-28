@@ -112,3 +112,17 @@ release {
   tagCommitMessage = '[Gradle Release Plugin] (EE-9726) - creating tag: '
   newVersionCommitMessage = '[Gradle Release Plugin] (EE-9726) - new version commit: '
 }
+
+task updateChart() {
+  doLast {
+    updateChart_steps()
+  }
+}
+
+void updateChart_steps() {
+  exec {
+    commandLine 'sh', '-c', 'update-chart.sh'
+  }
+}
+
+tasks.preTagCommit.dependsOn updateChart

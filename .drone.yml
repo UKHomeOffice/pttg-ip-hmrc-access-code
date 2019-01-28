@@ -7,6 +7,17 @@ pipeline:
     when:
       event: [push, pull_request, tag]
 
+  update-version:
+    image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.4.1
+    secrets:
+      - github_ssh_key
+    commands:
+      - sh /root/git-utilities/set-up-github-user.sh "$${GITHUB_SSH_KEY}"
+      - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
+    when:
+      branch: [master ]
+      event: [push]
+
   docker-build:
     image: docker:17.09.1
     environment:
@@ -43,7 +54,7 @@ pipeline:
       - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:$${DRONE_TAG}
     when:
       event: tag
-  
+
   clone-kube-project:
     image: plugins/git
     commands:
