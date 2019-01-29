@@ -108,7 +108,17 @@ dependencies {
 gradle.startParameter.continueOnFailure = false
 
 release {
-  preTagCommitMessage = '[Gradle Release Plugin] (EE-9726) - pre tag commit: '
+  preTagCommitMessage = '[Gradle Release Plugin] (EE-9726) [CI SKIP] - pre tag commit: '
   tagCommitMessage = '[Gradle Release Plugin] (EE-9726) - creating tag: '
-  newVersionCommitMessage = '[Gradle Release Plugin] (EE-9726) - new version commit: '
+  newVersionCommitMessage = '[Gradle Release Plugin] (EE-9726) [CI SKIP] - new version commit: '
 }
+
+task updateChart() {
+  doLast {
+    exec {
+      commandLine 'sh', './update-chart.sh'
+    }
+  }
+}
+
+tasks.preTagCommit.dependsOn updateChart
