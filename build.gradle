@@ -14,8 +14,6 @@ buildscript {
   }
 }
 
-version = '0.0.1'
-
 if (System.getenv('VERSION')) {
   version = System.getenv('VERSION')
 }
