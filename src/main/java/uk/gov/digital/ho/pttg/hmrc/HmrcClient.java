@@ -13,11 +13,14 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.pttg.application.ApplicationExceptions;
+
+import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
-
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_ACCESS_CODE_RESPONSE_SUCCESS;
 
 
 @Component
@@ -29,7 +32,7 @@ public class HmrcClient {
     private final String accessTokenResource;
 
     @Autowired
-    public HmrcClient(@Qualifier(value = "hmrcRestTemplate") RestTemplate restTemplate,
+    HmrcClient(@Qualifier(value = "hmrcRestTemplate") RestTemplate restTemplate,
                       @Value("${client.id}") String clientId,
                       @Value("${hmrc.endpoint}") String baseHmrcUrl) {
         this.restTemplate = restTemplate;
@@ -70,7 +73,7 @@ public class HmrcClient {
             }
         }
 
-        log.info("Received access code response");
+        log.info("Received access code response", value(EVENT, HMRC_ACCESS_CODE_RESPONSE_SUCCESS));
         return accessCode;
     }
 }

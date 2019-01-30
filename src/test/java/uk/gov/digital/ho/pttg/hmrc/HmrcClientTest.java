@@ -1,5 +1,11 @@
 package uk.gov.digital.ho.pttg.hmrc;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +14,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,15 +28,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_ACCESS_CODE_RESPONSE_SUCCESS;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HmrcClientTest {
 
     @Mock
     private RestTemplate mockRestTemplate;
+
+    @Mock
+    private Appender<ILoggingEvent> mockAppender;
 
     @Captor private ArgumentCaptor<String> captorUrl;
     @Captor private ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> captorRequest;
@@ -39,6 +52,9 @@ public class HmrcClientTest {
     @Before
     public void setup() {
         hmrcClient = new HmrcClient(mockRestTemplate, "some client id", "some url");
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(HmrcClient.class);
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.addAppender(mockAppender);
     }
 
     @Test
@@ -102,5 +118,25 @@ public class HmrcClientTest {
 
         assertThatThrownBy(() -> hmrcClient.getAccessCodeFromHmrc("some totp code"))
                 .isInstanceOf(ApplicationExceptions.ProxyForbiddenException.class);
+    }
+
+    @Test
+    public void shouldLogWhenAccessCodeResponseReceived() {
+        ResponseEntity<AccessCodeHmrc> responseEntity = new ResponseEntity<>(new AccessCodeHmrc("some code", 0, "some token"), HttpStatus.OK);
+
+        when(mockRestTemplate.postForEntity(
+                anyString(),
+                ArgumentMatchers.<Class<HttpEntity<MultiValueMap<String, String>>>>any(),
+                ArgumentMatchers.<Class<AccessCodeHmrc>>any()))
+                .thenReturn(responseEntity);
+
+        hmrcClient.getAccessCodeFromHmrc("some totp code");
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("Received access code response") &&
+                    (loggingEvent.getArgumentArray()[0]).equals(new ObjectAppendingMarker(EVENT, HMRC_ACCESS_CODE_RESPONSE_SUCCESS));
+        }));
     }
 }
