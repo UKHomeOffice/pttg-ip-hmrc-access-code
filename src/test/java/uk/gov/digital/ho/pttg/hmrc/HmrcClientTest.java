@@ -33,7 +33,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_ACCESS_CODE_RESPONSE_SUCCESS;
 import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_GET_ACCESS_CODE_SUCCESS;
 
 @RunWith(MockitoJUnitRunner.class)
