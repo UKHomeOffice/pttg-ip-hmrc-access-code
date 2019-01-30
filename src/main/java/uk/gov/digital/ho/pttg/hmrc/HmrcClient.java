@@ -21,6 +21,7 @@ import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAccessCodeServiceRuntimeException;
 import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
 import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_ACCESS_CODE_RESPONSE_SUCCESS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_GET_ACCESS_CODE_SUCCESS;
 
 
 @Component
@@ -73,7 +74,7 @@ public class HmrcClient {
             }
         }
 
-        log.info("Received access code response", value(EVENT, HMRC_ACCESS_CODE_RESPONSE_SUCCESS));
+        log.info("Received access code response", value(EVENT, HMRC_GET_ACCESS_CODE_SUCCESS));
         return accessCode;
     }
 }
