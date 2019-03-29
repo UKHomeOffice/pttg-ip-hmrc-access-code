@@ -7,16 +7,21 @@
     <springProperty scope="context" name="appVersion" source="info.app.version"/>
 
     <springProfile name="logtoconsole">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <appender name="applicationAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
             </layout>
         </appender>
 
-        <appender name="applicationAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <appender name="thirdPartyAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
             </layout>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
         </appender>
 
         <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
@@ -30,12 +35,6 @@
     </springProfile>
 
     <springProfile name="!logtoconsole">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeCallerInfo>true</includeCallerInfo>
-            </encoder>
-        </appender>
-
         <appender name="applicationAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
@@ -51,6 +50,28 @@
                     </pattern>
                 </provider>
             </encoder>
+        </appender>
+
+        <appender name="thirdPartyAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeCallerInfo>true</includeCallerInfo>
+                <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
+                    <pattern>
+                        {
+                        "thread" : "%thread",
+                        "subsystem" : "${appName}",
+                        "logger" : "%logger{50}",
+                        "exception" : "%exception"
+                        }
+                    </pattern>
+                </provider>
+            </encoder>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
+
         </appender>
 
         <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
@@ -78,19 +99,19 @@
 
     <!-- Override default spring logger  -->
     <logger name="org.springframework" additivity="false" level="INFO">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </logger>
     <logger name="org.hibernate" additivity="false" level="WARN">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </logger>
     <logger name="org.flyway" additivity="false" level="WARN">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </logger>
     <logger name="org.flywaydb" additivity="false" level="WARN">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </logger>
 
@@ -99,12 +120,12 @@
     </logger>
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" additivity="false" level="ERROR">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </logger>
 
     <root level="INFO">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyAppender"/>
         <appender-ref ref="thirdPartyErrorAppender" />
     </root>
 
