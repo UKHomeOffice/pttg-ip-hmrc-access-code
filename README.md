@@ -21,7 +21,7 @@ The endpoints are defined in `AccessCodeResource.java`
 
 * The `/access` endpoint is used to retrieve an access code for HMRC.
 * The `/refresh` endpoint is used to trigger an update of the access code.
-* The `/access/{accessCode}/report` endpoint is used to report an expired access code to eagerly remove it from caching.
+* The `/access/{accessCode}/report` endpoint is used to report an expired access code to remove it from caching.
 
 ## Building
 
