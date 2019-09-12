@@ -50,7 +50,7 @@ pipeline:
     commands:
       - docker login -u="ukhomeofficedigital+pttg" -p=$${DOCKER_PASSWORD} quay.io
       - docker tag pttg-ip-hmrc-access-code quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:${DRONE_BRANCH}
-      - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:{DRONE_BRANCH}
+      - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:${DRONE_BRANCH}
     when:
       branch:
         exclude: master
