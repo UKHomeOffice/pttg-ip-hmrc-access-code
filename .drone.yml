@@ -62,7 +62,7 @@ pipeline:
     image: quay.io/ukhomeofficedigital/drone-trigger:latest
     drone_server: https://drone.acp.homeoffice.gov.uk
     repo: UKHomeOffice/pttg-ip-e2e-tests
-    branch: <master>
+    branch: <EE-21428-configurable-image-versions>
     when:
       branch: [EE-21428-trigger-e2e]
       event: push
