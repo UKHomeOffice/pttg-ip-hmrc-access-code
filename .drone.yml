@@ -51,22 +51,9 @@ pipeline:
       - docker login -u="ukhomeofficedigital+pttg" -p=$${DOCKER_PASSWORD} quay.io
       - docker tag pttg-ip-hmrc-access-code quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:${DRONE_BRANCH}
       - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:${DRONE_BRANCH}
-      - docker tag pttg-ip-hmrc-access-code quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:latest # TODO delete latest tag from branch - just using it for a test
-      - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:latest
     when:
       branch:
         exclude: master
-      event: push
-
-  trigger_e2e_tests:
-    image: quay.io/ukhomeofficedigital/drone-trigger:latest
-    secrets:
-      - DRONE_TOKEN
-    drone_server: https://drone.acp.homeoffice.gov.uk
-    repo: UKHomeOffice/pttg-ip-e2e-tests
-    branch: master
-    when:
-      branch: [EE-21428-trigger-e2e]
       event: push
 
   install-docker-image-from-master-branch-build:
@@ -103,6 +90,17 @@ pipeline:
       - docker push quay.io/ukhomeofficedigital/pttg-ip-hmrc-access-code:$(cat ./tagSemver)
     when:
       event: tag
+
+  trigger-e2e-tests:
+    image: quay.io/ukhomeofficedigital/drone-trigger:latest
+    secrets:
+      - DRONE_TOKEN
+    drone_server: https://drone.acp.homeoffice.gov.uk
+    repo: UKHomeOffice/pttg-ip-e2e-tests
+    branch: master
+    when:
+      branch: [master]
+      event: push
 
   clone-kube-project:
     image: plugins/git
