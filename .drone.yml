@@ -60,6 +60,8 @@ pipeline:
 
   trigger_e2e_tests:
     image: quay.io/ukhomeofficedigital/drone-trigger:latest
+    secrets:
+      - DRONE_TOKEN
     drone_server: https://drone.acp.homeoffice.gov.uk
     repo: UKHomeOffice/pttg-ip-e2e-tests
     branch: <EE-21428-configurable-image-versions>
