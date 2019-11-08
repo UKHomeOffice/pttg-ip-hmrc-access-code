@@ -21,6 +21,7 @@ RUN groupadd -r ${GROUP} && \
 
 COPY ${JAR_PATH}/${NAME}*.jar /app
 COPY run.sh /app
+COPY src/main/resources/rds-combined-ca-bundle.pem /app
 
 RUN chmod a+x /app/run.sh
 
