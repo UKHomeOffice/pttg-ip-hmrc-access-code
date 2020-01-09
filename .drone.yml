@@ -106,7 +106,7 @@ pipeline:
     image: plugins/git
     commands:
       - git clone https://github.com/UKHomeOffice/kube-pttg-ip-hmrc-access-code.git
-      - cd kube-pttg-hmrc-access-code
+      - cd kube-pttg-ip-hmrc-access-code
       - git checkout $${KUBE_BRANCH:=master}
     when:
       event: [push, tag, deployment]
