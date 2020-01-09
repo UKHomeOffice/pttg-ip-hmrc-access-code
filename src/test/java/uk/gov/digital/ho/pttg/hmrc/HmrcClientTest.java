@@ -51,7 +51,7 @@ public class HmrcClientTest {
 
     @Before
     public void setup() {
-        hmrcClient = new HmrcClient(mockRestTemplate, "some client id", "some url");
+        hmrcClient = new HmrcClient(mockRestTemplate, "some client id", "some client secret", "some url");
         Logger rootLogger = (Logger) LoggerFactory.getLogger(HmrcClient.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
@@ -86,7 +86,7 @@ public class HmrcClientTest {
         assertThat(body.get("client_id").size()).isEqualTo(1);
         assertThat(body.get("client_id").get(0)).isEqualTo("some client id");
         assertThat(body.get("client_secret").size()).isEqualTo(1);
-        assertThat(body.get("client_secret").get(0)).isEqualTo("some totp code");
+        assertThat(body.get("client_secret").get(0)).isEqualTo("some totp code" + "some client secret");
     }
 
     @Test

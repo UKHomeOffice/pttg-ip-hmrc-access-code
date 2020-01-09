@@ -29,14 +29,17 @@ public class HmrcClient {
 
     private final RestTemplate restTemplate;
     private final String clientId;
+    private final String clientSecret;
     private final String accessTokenResource;
 
     @Autowired
     HmrcClient(@Qualifier(value = "hmrcRestTemplate") RestTemplate restTemplate,
-                      @Value("${client.id}") String clientId,
-                      @Value("${hmrc.endpoint}") String baseHmrcUrl) {
+               @Value("${client.id}") String clientId,
+               @Value("${client.secret}") String clientSecret,
+               @Value("${hmrc.endpoint}") String baseHmrcUrl) {
         this.restTemplate = restTemplate;
         this.clientId = clientId;
+        this.clientSecret = clientSecret;
         this.accessTokenResource = baseHmrcUrl + "/oauth/token";
     }
 
@@ -51,7 +54,7 @@ public class HmrcClient {
 
         map.add("grant_type", "client_credentials");
         map.add("client_id", clientId);
-        map.add("client_secret", totpCode);
+        map.add("client_secret", totpCode + clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
