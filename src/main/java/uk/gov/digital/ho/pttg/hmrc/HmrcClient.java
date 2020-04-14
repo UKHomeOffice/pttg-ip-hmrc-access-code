@@ -29,36 +29,26 @@ public class HmrcClient {
 
     private final RestTemplate restTemplate;
     private final String clientId;
+    private final String clientSecret;
     private final String accessTokenResource;
 
     @Autowired
     HmrcClient(@Qualifier(value = "hmrcRestTemplate") RestTemplate restTemplate,
                       @Value("${client.id}") String clientId,
+                      @Value("${client.secret}") String clientSecret,
                       @Value("${hmrc.endpoint}") String baseHmrcUrl) {
         this.restTemplate = restTemplate;
         this.clientId = clientId;
+        this.clientSecret = clientSecret;
         this.accessTokenResource = baseHmrcUrl + "/oauth/token";
     }
 
     public AccessCodeHmrc getAccessCodeFromHmrc(String totpCode) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(APPLICATION_FORM_URLENCODED);
-
         AccessCodeHmrc accessCode;
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
-        map.add("grant_type", "client_credentials");
-        map.add("client_id", clientId);
-        map.add("client_secret", totpCode);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-
-        log.debug("Calling HMRC for new access code");
-
         try {
-            accessCode = restTemplate.postForEntity(accessTokenResource, request, AccessCodeHmrc.class).getBody();
+            accessCode = restTemplate.postForEntity(accessTokenResource, generateRequest(totpCode), AccessCodeHmrc.class).getBody();
             if(accessCode == null) {
                 throw new HmrcAccessCodeServiceRuntimeException("HMRC returned null access code");
             }
@@ -75,5 +65,18 @@ public class HmrcClient {
 
         log.info("Received access code response", value(EVENT, HMRC_GET_ACCESS_CODE_SUCCESS));
         return accessCode;
+    }
+
+    private HttpEntity<MultiValueMap<String, String>> generateRequest(String totpCode) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+        map.add("grant_type", "client_credentials");
+        map.add("client_id", clientId);
+        map.add("client_secret", totpCode + clientSecret);
+
+        return new HttpEntity<>(map, headers);
     }
 }
