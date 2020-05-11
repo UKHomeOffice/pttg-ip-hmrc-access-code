@@ -34,9 +34,9 @@ public class HmrcClient {
 
     @Autowired
     HmrcClient(@Qualifier(value = "hmrcRestTemplate") RestTemplate restTemplate,
-                      @Value("${client.id}") String clientId,
-                      @Value("${client.secret}") String clientSecret,
-                      @Value("${hmrc.endpoint}") String baseHmrcUrl) {
+               @Value("${client.id}") String clientId,
+               @Value("${client.secret}") String clientSecret,
+               @Value("${hmrc.endpoint}") String baseHmrcUrl) {
         this.restTemplate = restTemplate;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -49,17 +49,17 @@ public class HmrcClient {
 
         try {
             accessCode = restTemplate.postForEntity(accessTokenResource, generateRequest(totpCode), AccessCodeHmrc.class).getBody();
-            if(accessCode == null) {
+            if (accessCode == null) {
                 throw new HmrcAccessCodeServiceRuntimeException("HMRC returned null access code");
             }
         } catch (HttpClientErrorException ex) {
             HttpStatus statusCode = ex.getStatusCode();
-           if (statusCode.equals(FORBIDDEN)) {
+            if (statusCode.equals(FORBIDDEN)) {
                 throw new ApplicationExceptions.ProxyForbiddenException("Received a 403 Forbidden response from proxy");
             } else if (statusCode.equals(UNAUTHORIZED)) {
                 throw new ApplicationExceptions.HmrcUnauthorisedException(ex.getMessage(), ex);
             } else {
-               throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", ex);
+                throw new HmrcAccessCodeServiceRuntimeException("Problem retrieving Access Code from HMRC", ex);
             }
         }
 
