@@ -71,12 +71,12 @@ public class HmrcClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> oauthData = new LinkedMultiValueMap<>();
 
-        map.add("grant_type", "client_credentials");
-        map.add("client_id", clientId);
-        map.add("client_secret", totpCode + clientSecret);
+        oauthData.add("grant_type", "client_credentials");
+        oauthData.add("client_id", clientId);
+        oauthData.add("client_secret", totpCode + clientSecret);
 
-        return new HttpEntity<>(map, headers);
+        return new HttpEntity<>(oauthData, headers);
     }
 }
