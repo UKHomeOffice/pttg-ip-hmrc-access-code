@@ -22,7 +22,6 @@ import static uk.gov.digital.ho.pttg.application.ApplicationExceptions.HmrcAcces
 import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
 import static uk.gov.digital.ho.pttg.application.LogEvent.HMRC_GET_ACCESS_CODE_SUCCESS;
 
-
 @Component
 @Slf4j
 public class HmrcClient {
