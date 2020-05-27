@@ -17,7 +17,7 @@ else
     rm "${file}"
   done
 
-  keytool -importkeystore -destkeystore /app/truststore.jks -srckeystore /opt/jdk/jre/lib/security/cacerts -srcstorepass changeit -noprompt -storepass changeit &> /dev/null
+  keytool -importkeystore -destkeystore /app/truststore.jks -srckeystore /certs/ca-bundle.trust.crt -srcstorepass changeit -noprompt -storepass changeit &> /dev/null
 
   java ${JAVA_OPTS} -Djavax.net.ssl.trustStore=/app/truststore.jks \
                   -Dcom.sun.management.jmxremote.local.only=false \
