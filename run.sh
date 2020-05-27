@@ -16,11 +16,8 @@ else
     rm "${file}"
   done
 
-  certfiles=$(awk '/-----BEGIN CERTIFICATE-----/{filename="acpca-b-"NR; print filename}; {print >filename}' /certs/ca-certificates.crt)
-
-  for file in ${certfiles}; do
-    keytool -import -alias "${file}" -file "${file}" -keystore ./truststore.jks -noprompt -storepass changeit -trustcacerts
-    rm "${file}"
+  for file in ./DigiCert*; do
+   keytool -import -alias "${file}" -file "${file}" -keystore ./truststore.jks -noprompt -storepass changeit -trustcacerts
   done
 
   java ${JAVA_OPTS} -Djavax.net.ssl.trustStore=/app/truststore.jks \
