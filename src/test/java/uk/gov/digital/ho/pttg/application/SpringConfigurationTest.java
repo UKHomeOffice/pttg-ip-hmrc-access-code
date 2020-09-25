@@ -2,6 +2,7 @@ package uk.gov.digital.ho.pttg.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,8 +41,8 @@ public class SpringConfigurationTest {
     public void setUp() {
         when(mockRestTemplateBuilder.additionalCustomizers(any(ProxyCustomizer.class))).thenReturn(mockRestTemplateBuilder);
         when(mockRestTemplateBuilder.additionalMessageConverters(any(HttpMessageConverter.class))).thenReturn(mockRestTemplateBuilder);
-        when(mockRestTemplateBuilder.setReadTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
-        when(mockRestTemplateBuilder.setConnectTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
+        when(mockRestTemplateBuilder.setReadTimeout(any(Duration.class))).thenReturn(mockRestTemplateBuilder);
+        when(mockRestTemplateBuilder.setConnectTimeout(any(Duration.class))).thenReturn(mockRestTemplateBuilder);
         when(mockRestTemplateBuilder.requestFactory(any(Supplier.class))).thenReturn(mockRestTemplateBuilder);
 
         when(mockRestTemplateBuilder.build()).thenReturn(mockRestTemplate);
@@ -84,8 +85,8 @@ public class SpringConfigurationTest {
         RestTemplate restTemplate = springConfig.auditRestTemplate(mockRestTemplateBuilder, new ObjectMapper());
 
         // then
-        verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
-        verify(mockRestTemplateBuilder).setConnectTimeout(connectTimeout);
+        verify(mockRestTemplateBuilder).setReadTimeout(Duration.ofMillis(readTimeout));
+        verify(mockRestTemplateBuilder).setConnectTimeout(Duration.ofMillis(connectTimeout));
 
         assertThat(restTemplate).isEqualTo(mockRestTemplate);
     }
@@ -106,8 +107,8 @@ public class SpringConfigurationTest {
         RestTemplate restTemplate = springConfig.hmrcRestTemplate(mockRestTemplateBuilder, new ObjectMapper(), clientHttpRequestFactory);
 
         // then
-        verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
-        verify(mockRestTemplateBuilder).setConnectTimeout(connectTimeout);
+        verify(mockRestTemplateBuilder).setReadTimeout(Duration.ofMillis(readTimeout));
+        verify(mockRestTemplateBuilder).setConnectTimeout(Duration.ofMillis(connectTimeout));
 
         assertThat(restTemplate).isEqualTo(mockRestTemplate);
     }

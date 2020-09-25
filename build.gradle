@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    springBootVersion = '2.0.0.RELEASE'
+    springBootVersion = '2.3.4.RELEASE'
   }
   repositories {
     mavenCentral()
@@ -71,7 +71,8 @@ repositories {
 
 dependencies {
 
-  annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.16.12'
+  compileOnly 'org.projectlombok:lombok:1.18.12'
+  annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -86,11 +87,9 @@ dependencies {
 
   compile group: 'commons-codec',             name: 'commons-codec',  version: '1.10'
   compile group: 'org.apache.httpcomponents', name: 'httpclient',     version: '4.5.3'
-  compile group: 'org.flywaydb',              name: 'flyway-core',    version: '4.2.0'
+  compile group: 'org.flywaydb',              name: 'flyway-core',    version: '5.2.4'
   compile group: 'org.hsqldb',                name: 'hsqldb',         version: '2.4.0'
   compile group: 'org.postgresql',            name: 'postgresql',     version: '9.4.1211.jre7'
-
-  compileOnly group: 'org.projectlombok',     name: 'lombok',         version: '1.16.12'
 
   testCompile group: 'org.springframework.boot',  name: 'spring-boot-starter-test'
   testCompile group: 'com.jayway.jsonpath',       name: 'json-path'

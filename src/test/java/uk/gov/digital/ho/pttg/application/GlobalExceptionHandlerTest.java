@@ -59,7 +59,7 @@ public class GlobalExceptionHandlerTest {
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            return loggingEvent.getFormattedMessage().equals("Responding with 500 after handling any message") &&
+            return loggingEvent.getFormattedMessage().equals("Responding with 500 INTERNAL_SERVER_ERROR after handling any message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
@@ -85,7 +85,7 @@ public class GlobalExceptionHandlerTest {
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            return loggingEvent.getFormattedMessage().equals("Responding with 500 after handling any message") &&
+            return loggingEvent.getFormattedMessage().equals("Responding with 500 INTERNAL_SERVER_ERROR after handling any message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
@@ -165,7 +165,7 @@ public class GlobalExceptionHandlerTest {
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            return loggingEvent.getFormattedMessage().equals("Responding with 400 after handling any message") &&
+            return loggingEvent.getFormattedMessage().equals("Responding with 400 BAD_REQUEST after handling any message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));

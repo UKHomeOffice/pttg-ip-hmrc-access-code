@@ -3,6 +3,7 @@ package uk.gov.digital.ho.pttg.application;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.time.Duration;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
@@ -67,8 +68,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(timeoutProperties.getAudit().getReadMs())
-                .setConnectTimeout(timeoutProperties.getAudit().getConnectMs())
+                .setReadTimeout(Duration.ofMillis(timeoutProperties.getAudit().getReadMs()))
+                .setConnectTimeout(Duration.ofMillis(timeoutProperties.getAudit().getConnectMs()))
                 .build();
     }
 
@@ -77,8 +78,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         RestTemplateBuilder builder = initaliseRestTemplateBuilder(restTemplateBuilder, mapper);
 
         return builder
-                .setReadTimeout(timeoutProperties.getHmrc().getReadMs())
-                .setConnectTimeout(timeoutProperties.getHmrc().getConnectMs())
+                .setReadTimeout(Duration.ofMillis(timeoutProperties.getHmrc().getReadMs()))
+                .setConnectTimeout(Duration.ofMillis(timeoutProperties.getHmrc().getConnectMs()))
                 .requestFactory(() -> clientHttpRequestFactory)
                 .build();
     }
