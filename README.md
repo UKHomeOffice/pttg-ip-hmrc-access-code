@@ -74,7 +74,6 @@ See the list of [contributors] who participated in this project.
 This project is licensed under the MIT License - see the [LICENCE.md]
 file for details.
 
-
 [contributors]:                     https://github.com/UKHomeOffice/pttg-ip-hmrc-access-code/graphs/contributors
 [pttg-ip-hmrc]:                     https://github.com/UKHomeOffice/pttg-ip-hmrc
 [pttg-ip-audit]:                    https://github.com/UKHomeOffice/pttg-ip-audit
@@ -90,3 +89,4 @@ file for details.
 [LICENCE.md]:                       LICENCE.md
 [GitHub]:                           https://github.com/orgs/UKHomeOffice/teams/pttg
 [HMRC Stub]:                        https://bitbucket.ipttools.info/projects/EUE-API/repos/eue-api-hmrc-stub/
+
