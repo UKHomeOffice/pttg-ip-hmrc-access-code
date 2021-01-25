@@ -14,8 +14,6 @@ steps:
   image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.5.0
   commands:
   - ./gradlew build
-  - echo 'in gradle-build stage - result of gradle build ...'
-  - ls -l build/libs
   when:
     event:
     - push
@@ -46,12 +44,6 @@ steps:
   commands:
   # wait for docker service to be up before running docker build
   - n=0; while [ "$n" -lt 60 ] && [ ! docker stats --no-stream ]; do n=$(( n + 1 )); sleep 1; done
-  - echo 'in build-docker-image stage, current dir is ...'
-  - pwd
-  - echo 'current dirs here are ...'
-  - ls -l
-  - echo 'result of gradle build ...'
-  - ls -l build/libs
   - docker build -t pttg-ip-hmrc-access-code .
   when:
     event:
