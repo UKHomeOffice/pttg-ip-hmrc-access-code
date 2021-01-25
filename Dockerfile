@@ -19,11 +19,6 @@ RUN groupadd -r ${GROUP} && \
     mkdir -p /app && \
     chown -R ${USER}:${GROUP} /app
 
-RUN echo "JAR_PATH is [ $JAR_PATH ] "
-RUN echo "NAME is [ $NAME ] "
-RUN echo "content of JAR_PATH is:"
-RUN ls -l "${JAR_PATH}/"
-
 COPY ${JAR_PATH}/${NAME}*.jar /app
 COPY run.sh /app
 COPY src/main/resources/rds-combined-ca-bundle.pem /app
