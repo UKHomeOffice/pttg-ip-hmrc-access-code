@@ -8,9 +8,10 @@ platform:
   arch: amd64
 
 steps:
-- name: build-project
+
+- name: gradle-build
   pull: if-not-exists
-  image: quay.io/ukhomeofficedigital/openjdk8:v1.1.0
+  image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.5.0
   commands:
   - ./gradlew build
   when:
