@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NAME=${NAME:-pttg-ip-hmrc}
+NAME=${NAME:-pttg-ip-hmrc-access-code}
 JAR=$(find . -name ${NAME}*.jar | head -1)
 
 if [ -z ${ACP_MODE} ]; then
