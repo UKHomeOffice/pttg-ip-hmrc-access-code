@@ -156,7 +156,7 @@ steps:
     KUBE_SERVER: https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     PTTG_IP_DEV:
       from_secret: pttg_ip_dev
-    VERSION: 1.2.13
+    VERSION: ${IMAGE_VERSION}
   when:
     event:
     - promote
@@ -169,7 +169,12 @@ steps:
   pull: if-not-exists
   image: quay.io/ukhomeofficedigital/kd:v1.17.0
   commands:
+  - echo 'env vars in drone.yml are:`
+  - echo VERSION=[${VERSION}]
+  - echo IMAGE_VERSION=[${IMAGE_VERSION}]
+  - echo DRONE_BUILD_NUMBER=[${DRONE_BUILD_NUMBER}]
   - cd kube-pttg-ip-hmrc-access-code
+  - echo '==================================='
   - ./deploy.sh
   environment:
     ENVIRONMENT: ${DRONE_DEPLOY_TO}
