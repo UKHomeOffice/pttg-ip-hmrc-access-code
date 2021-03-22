@@ -156,7 +156,7 @@ steps:
     KUBE_SERVER: https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     PTTG_IP_DEV:
       from_secret: pttg_ip_dev
-    VERSION: ${IMAGE_VERSION}
+    VERSION: 1.2.13
   when:
     event:
     - promote
